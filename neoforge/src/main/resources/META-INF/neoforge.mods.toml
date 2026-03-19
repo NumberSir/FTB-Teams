@@ -27,13 +27,6 @@ ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.ftbteams]]
-modId = "architectury"
-type  = "required"
-versionRange = "[${archversion},)"
-ordering = "AFTER"
-side = "BOTH"
-
-[[dependencies.ftbteams]]
 modId = "ftblibrary"
 type  = "required"
 versionRange = "[${ftblibraryversion},)"

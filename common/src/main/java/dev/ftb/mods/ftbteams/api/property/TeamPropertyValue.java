@@ -1,6 +1,6 @@
 package dev.ftb.mods.ftbteams.api.property;
 
-import net.minecraft.nbt.Tag;
+import de.marhali.json5.Json5Element;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 
 /**
@@ -25,8 +25,8 @@ public final class TeamPropertyValue<T> {
 		return new TeamPropertyValue<>(property, property.readValue(buf));
 	}
 
-	public static <X> TeamPropertyValue<X> fromNBT(TeamProperty<X> property, Tag tag) {
-		return new TeamPropertyValue<>(property, property.fromNBT(tag).orElse(property.getDefaultValue()));
+	public static <X> TeamPropertyValue<X> fromJson(TeamProperty<X> property, Json5Element tag) {
+		return new TeamPropertyValue<>(property, property.fromJson(tag).orElse(property.getDefaultValue()));
 	}
 
 	public static <X> TeamPropertyValue<X> createDefaultValue(TeamProperty<X> property) {

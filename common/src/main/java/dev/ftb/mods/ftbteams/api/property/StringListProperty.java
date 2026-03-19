@@ -1,11 +1,11 @@
 package dev.ftb.mods.ftbteams.api.property;
 
+import de.marhali.json5.Json5Array;
+import de.marhali.json5.Json5Element;
+import de.marhali.json5.Json5Primitive;
 import dev.ftb.mods.ftblibrary.client.config.EditableConfigGroup;
 import dev.ftb.mods.ftblibrary.client.config.editable.EditableConfigValue;
 import dev.ftb.mods.ftblibrary.client.config.editable.EditableString;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.Identifier;
@@ -58,18 +58,14 @@ public class StringListProperty extends TeamProperty<List<String>> {
     }
 
     @Override
-    public Tag toNBT(List<String> value) {
-        ListTag res = new ListTag();
-        value.forEach(s -> res.add(StringTag.valueOf(s)));
-        return res;
+    public Json5Element toJson(List<String> value) {
+        return value.stream().map(Json5Primitive::fromString).collect(Json5Array::new, Json5Array::add, Json5Array::addAll);
     }
 
     @Override
-    public Optional<List<String>> fromNBT(Tag tag) {
-        List<String> res = new ArrayList<>();
-        if (tag instanceof ListTag l) {
-            l.forEach(t -> res.add(t.asString().orElse("")));
-            return Optional.of(res);
+    public Optional<List<String>> fromJson(Json5Element json) {
+        if (json instanceof Json5Array a) {
+            return Optional.of(a.asList().stream().map(Json5Element::getAsString).toList());
         } else {
             return Optional.empty();
         }

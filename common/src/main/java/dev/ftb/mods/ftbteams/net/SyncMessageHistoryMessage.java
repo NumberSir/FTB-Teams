@@ -1,6 +1,6 @@
 package dev.ftb.mods.ftbteams.net;
 
-import dev.architectury.networking.NetworkManager;
+import dev.ftb.mods.ftblibrary.platform.network.PacketContext;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.Team;
 import dev.ftb.mods.ftbteams.api.TeamMessage;
@@ -27,14 +27,12 @@ public record SyncMessageHistoryMessage(List<TeamMessage> messages) implements C
         return new SyncMessageHistoryMessage(team.getMessageHistory());
     }
 
-    public static void handle(SyncMessageHistoryMessage message, NetworkManager.PacketContext context) {
-        context.queue(() -> {
-            ClientTeam team = ClientTeamManagerImpl.getInstance().selfTeam();
-            if (team.isValid()) {
-                team.setMessageHistory(message.messages);
-                MyTeamScreen.refreshIfOpen();
-            }
-        });
+    public static void handle(SyncMessageHistoryMessage message, PacketContext context) {
+        ClientTeam team = ClientTeamManagerImpl.getInstance().selfTeam();
+        if (team.isValid()) {
+            team.setMessageHistory(message.messages);
+            MyTeamScreen.refreshIfOpen();
+        }
     }
 
     @Override

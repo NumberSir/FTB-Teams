@@ -1,6 +1,6 @@
 package dev.ftb.mods.ftbteams.net;
 
-import dev.architectury.networking.NetworkManager;
+import dev.ftb.mods.ftblibrary.platform.network.PacketContext;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -16,12 +16,10 @@ public record SendMessageMessage(String msg) implements CustomPacketPayload {
 			SendMessageMessage::new
 	);
 
-	public static void handle(SendMessageMessage message, NetworkManager.PacketContext context) {
-		context.queue(() -> {
-			ServerPlayer player = (ServerPlayer) context.getPlayer();
-			FTBTeamsAPI.api().getManager().getTeamForPlayer(player)
-					.ifPresent(team -> team.sendMessage(player.getUUID(), message.msg));
-		});
+	public static void handle(SendMessageMessage message, PacketContext context) {
+		ServerPlayer player = (ServerPlayer) context.player();
+		FTBTeamsAPI.api().getManager().getTeamForPlayer(player)
+				.ifPresent(team -> team.sendMessage(player.getUUID(), message.msg));
 	}
 
 	@Override

@@ -2,35 +2,16 @@ package dev.ftb.mods.ftbteams.api.event;
 
 import dev.ftb.mods.ftbteams.api.Team;
 import net.minecraft.server.level.ServerPlayer;
-import org.jetbrains.annotations.NotNull;
 
-public class PlayerJoinedPartyTeamEvent extends TeamEvent {
-	private final Team previousTeam;
-	private final ServerPlayer player;
+import java.util.function.Consumer;
 
-	public PlayerJoinedPartyTeamEvent(Team team, Team previousTeam, ServerPlayer player) {
-		super(team);
-		this.previousTeam = previousTeam;
-		this.player = player;
-	}
-
+@FunctionalInterface
+public interface PlayerJoinedPartyTeamEvent extends Consumer<PlayerJoinedPartyTeamEvent.Data> {
 	/**
-	 * Get the player's previous team, which will be always be their player team.
-	 *
-	 * @return the player's previous team
+	 * @param team the party team being joined
+	 * @param previousTeam the player's personal team
+	 * @param player the player who just joined
 	 */
-	public Team getPreviousTeam() {
-		return previousTeam;
-	}
-
-	/**
-	 * Get the player who just joined. This will be always be non-null, since players need to be online to accept an
-	 * invitation to a team.
-	 *
-	 * @return the player
-	 */
-	@NotNull
-	public ServerPlayer getPlayer() {
-		return player;
+	record Data(Team team, Team previousTeam, ServerPlayer player) {
 	}
 }

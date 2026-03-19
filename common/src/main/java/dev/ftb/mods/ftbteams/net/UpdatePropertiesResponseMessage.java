@@ -1,6 +1,6 @@
 package dev.ftb.mods.ftbteams.net;
 
-import dev.architectury.networking.NetworkManager;
+import dev.ftb.mods.ftblibrary.platform.network.PacketContext;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.property.TeamProperty;
 import dev.ftb.mods.ftbteams.api.property.TeamPropertyCollection;
@@ -27,8 +27,8 @@ public record UpdatePropertiesResponseMessage(UUID teamId, TeamPropertyCollectio
 		return new UpdatePropertiesResponseMessage(teamId, Util.make(new TeamPropertyCollectionImpl(), c -> c.set(prop, value)));
 	}
 
-	public static void handle(UpdatePropertiesResponseMessage message, NetworkManager.PacketContext context) {
-		context.queue(() -> FTBTeamsClient.updateSettings(message.teamId, message.properties));
+	public static void handle(UpdatePropertiesResponseMessage message, PacketContext ignored) {
+		FTBTeamsClient.updateSettings(message.teamId, message.properties);
 	}
 
 	@Override

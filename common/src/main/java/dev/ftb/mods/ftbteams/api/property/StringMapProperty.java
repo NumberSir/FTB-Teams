@@ -2,8 +2,8 @@ package dev.ftb.mods.ftbteams.api.property;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import de.marhali.json5.Json5Element;
+import de.marhali.json5.Json5Object;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.Identifier;
@@ -59,17 +59,17 @@ public class StringMapProperty<T> extends TeamProperty<Map<String,T>> {
     }
 
     @Override
-    public Tag toNBT(Map<String, T> value) {
-        CompoundTag res = new CompoundTag();
-        value.forEach((k, v) -> res.putString(k, v.toString()));
+    public Json5Element toJson(Map<String, T> value) {
+        Json5Object res = new Json5Object();
+        value.forEach((k, v) -> res.addProperty(k, v.toString()));
         return res;
     }
 
     @Override
-    public Optional<Map<String, T>> fromNBT(Tag tag) {
-        if (tag instanceof CompoundTag c) {
+    public Optional<Map<String, T>> fromJson(Json5Element json) {
+        if (json instanceof Json5Object o) {
             Map<String,T> res = new HashMap<>();
-            c.keySet().forEach(k -> c.getString(k).ifPresent(s -> res.put(k, fromString.apply(s))));
+            o.asMap().forEach((k, v) -> res.put(k, fromString.apply(v.getAsString())));
             return Optional.of(res);
         } else {
             return Optional.empty();

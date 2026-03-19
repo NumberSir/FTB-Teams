@@ -1,20 +1,20 @@
 package dev.ftb.mods.ftbteams.data;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import de.marhali.json5.Json5Object;
+import dev.ftb.mods.ftblibrary.platform.event.NativeEventPosting;
+import dev.ftb.mods.ftblibrary.util.Json5Util;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.Team;
 import dev.ftb.mods.ftbteams.api.TeamRank;
-import dev.ftb.mods.ftbteams.api.event.PlayerTransferredTeamOwnershipEvent;
+import dev.ftb.mods.ftbteams.api.event.PlayerTransferredOwnershipEvent;
 import dev.ftb.mods.ftbteams.api.event.TeamAllyEvent;
-import dev.ftb.mods.ftbteams.api.event.TeamEvent;
 import dev.ftb.mods.ftbteams.command.TeamArgument;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -22,6 +22,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.*;
 
@@ -39,14 +40,15 @@ public class PartyTeam extends AbstractTeam {
 	}
 
 	@Override
-	protected void serializeExtraNBT(CompoundTag tag) {
-		tag.store("owner", UUIDUtil.CODEC, owner);
+	protected void serializeExtraJson(Json5Object json) {
+		Json5Util.store(json, "owner", UUIDUtil.STRING_CODEC, owner);
 	}
 
 	@Override
-	public void deserializeNBT(CompoundTag tag, HolderLookup.Provider provider) {
-		super.deserializeNBT(tag, provider);
-		owner = tag.read("owner", UUIDUtil.CODEC).orElseThrow();
+	public void deserializeJson(@UnknownNullability Json5Object json, HolderLookup.Provider provider) {
+		super.deserializeJson(json, provider);
+
+		owner = Json5Util.fetch(json, "owner", UUIDUtil.STRING_CODEC).orElseThrow();
 	}
 
 	@Override
@@ -113,17 +115,16 @@ public class PartyTeam extends AbstractTeam {
 					ServerPlayer invitee = FTBTUtils.getPlayerByUUID(manager.getServer(), profile.id());
 
 					if (invitee != null && !invitee.getUUID().equals(inviter.getUUID())) {
-						invitee.displayClientMessage(Component.translatable("ftbteams.message.invite_sent",
-								inviter.getName().copy().withStyle(ChatFormatting.YELLOW)), false);
+						invitee.sendSystemMessage(Component.translatable("ftbteams.message.invite_sent",
+								inviter.getName().copy().withStyle(ChatFormatting.YELLOW)));
 
 						Component acceptButton = makeInviteButton("ftbteams.accept", ChatFormatting.GREEN,
 								"/ftbteams party join " + getShortName());
 						Component declineButton = makeInviteButton("ftbteams.decline", ChatFormatting.RED,
 								"/ftbteams party decline " + getShortName());
-						invitee.displayClientMessage(Component.literal("[")
+						invitee.sendSystemMessage(Component.literal("[")
 								.append(acceptButton).append("] [")
-								.append(declineButton).append("]"),
-								false);
+								.append(declineButton).append("]"));
 					}
 				}
 			});
@@ -168,7 +169,7 @@ public class PartyTeam extends AbstractTeam {
 			manager.syncToAll(this, playerTeam);
 
 			if (playerToKick != null) {
-				playerToKick.displayClientMessage(Component.translatable("ftbteams.message.kicked", playerToKick.getName().copy().withStyle(ChatFormatting.YELLOW), getName().copy().withStyle(ChatFormatting.AQUA)), false);
+				playerToKick.sendSystemMessage(Component.translatable("ftbteams.message.kicked", playerToKick.getName().copy().withStyle(ChatFormatting.YELLOW), getName().copy().withStyle(ChatFormatting.AQUA)));
 				updateCommands(playerToKick);
 			}
 
@@ -250,10 +251,10 @@ public class PartyTeam extends AbstractTeam {
 
 		ServerPlayer toPlayer = from.getServer().getPlayerList().getPlayer(newOwnerID);
 		if (toPlayer != null) {
-			TeamEvent.OWNERSHIP_TRANSFERRED.invoker().accept(new PlayerTransferredTeamOwnershipEvent(this, fromPlayer, toPlayer));
+			NativeEventPosting.INSTANCE.postEvent(PlayerTransferredOwnershipEvent.Data.transferToPlayer(this, fromPlayer, toPlayer));
 			updateCommands(toPlayer);
 		} else {
-			TeamEvent.OWNERSHIP_TRANSFERRED.invoker().accept(new PlayerTransferredTeamOwnershipEvent(this, fromPlayer, toProfile));
+			NativeEventPosting.INSTANCE.postEvent(PlayerTransferredOwnershipEvent.Data.transferToProfile(this, fromPlayer, toProfile));
 		}
 
 		UUID fromId = fromPlayer == null ? Util.NIL_UUID : fromPlayer.getUUID();
@@ -323,7 +324,7 @@ public class PartyTeam extends AbstractTeam {
 				addedPlayers.add(player);
 				ServerPlayer invitedPlayer = manager.getServer().getPlayerList().getPlayer(id);
 				if (invitedPlayer != null) {
-					invitedPlayer.displayClientMessage(Component.translatable("ftbteams.message.now_allied", getDisplayName()).withStyle(ChatFormatting.GREEN), false);
+					invitedPlayer.sendSystemMessage(Component.translatable("ftbteams.message.now_allied", getDisplayName()).withStyle(ChatFormatting.GREEN));
 				}
 			}
 		}
@@ -331,7 +332,7 @@ public class PartyTeam extends AbstractTeam {
 		if (!addedPlayers.isEmpty()) {
 			markDirty();
 			manager.syncToAll(this);
-			TeamEvent.ADD_ALLY.invoker().accept(new TeamAllyEvent(this, addedPlayers.stream().map(e -> new GameProfile(e.id(), e.name())).toList(), true));
+			NativeEventPosting.INSTANCE.postEvent(new TeamAllyEvent.Data(this, addedPlayers, true));
 			return Command.SINGLE_SUCCESS;
 		}
 
@@ -352,7 +353,7 @@ public class PartyTeam extends AbstractTeam {
 				removedPlayers.add(player);
 				ServerPlayer removedPlayer = manager.getServer().getPlayerList().getPlayer(id);
 				if (removedPlayer != null) {
-					removedPlayer.displayClientMessage(Component.translatable("ftbteams.message.no_longer_allied", getDisplayName()).withStyle(ChatFormatting.GOLD), false);
+					removedPlayer.sendSystemMessage(Component.translatable("ftbteams.message.no_longer_allied", getDisplayName()).withStyle(ChatFormatting.GOLD));
 				}
 			}
 		}
@@ -360,7 +361,7 @@ public class PartyTeam extends AbstractTeam {
 		if (!removedPlayers.isEmpty()) {
 			markDirty();
 			manager.syncToAll(this);
-			TeamEvent.REMOVE_ALLY.invoker().accept(new TeamAllyEvent(this, removedPlayers.stream().map(e -> new GameProfile(e.id(), e.name())).toList(), false));
+			NativeEventPosting.INSTANCE.postEvent(new TeamAllyEvent.Data(this, removedPlayers, false));
 			return Command.SINGLE_SUCCESS;
 		}
 

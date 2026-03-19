@@ -1,6 +1,6 @@
 package dev.ftb.mods.ftbteams.net;
 
-import dev.architectury.networking.NetworkManager;
+import dev.ftb.mods.ftblibrary.platform.network.PacketContext;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.client.gui.MyTeamScreen;
 import dev.ftb.mods.ftbteams.data.ClientTeamManagerImpl;
@@ -22,11 +22,9 @@ public record SyncTeamsMessage(ClientTeamManagerImpl manager, UUID selfTeamID, b
 			SyncTeamsMessage::new
 	);
 
-	public static void handle(SyncTeamsMessage message, NetworkManager.PacketContext context) {
-		context.queue(() -> {
-			ClientTeamManagerImpl.syncFromServer(message.manager, message.selfTeamID, message.fullSync);
-			MyTeamScreen.refreshIfOpen();
-		});
+	public static void handle(SyncTeamsMessage message, PacketContext context) {
+		ClientTeamManagerImpl.syncFromServer(message.manager, message.selfTeamID, message.fullSync);
+		MyTeamScreen.refreshIfOpen();
 	}
 
 	@Override

@@ -1,7 +1,8 @@
 package dev.ftb.mods.ftbteams.data;
 
 import com.mojang.brigadier.Command;
-import dev.ftb.mods.ftbteams.api.event.TeamEvent;
+import dev.ftb.mods.ftblibrary.platform.event.NativeEventPosting;
+import dev.ftb.mods.ftbteams.api.event.TeamDeletedEvent;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 
@@ -32,7 +33,7 @@ public class ServerTeam extends AbstractTeam {
 
 		source.sendSuccess(() -> Component.translatable("ftbteams.message.deleted_server_team", getShortName()), true);
 
-		TeamEvent.DELETED.invoker().accept(new TeamEvent(this));
+		NativeEventPosting.INSTANCE.postEvent(new TeamDeletedEvent.Data(this));
 
 		return Command.SINGLE_SUCCESS;
 	}

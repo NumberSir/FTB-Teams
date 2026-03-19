@@ -16,7 +16,7 @@ import dev.ftb.mods.ftbteams.data.ClientTeam;
 import dev.ftb.mods.ftbteams.data.ClientTeamManagerImpl;
 import dev.ftb.mods.ftbteams.data.TeamType;
 import dev.ftb.mods.ftbteams.net.PlayerGUIOperationMessage.Operation;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ public class MemberButton extends NordButton {
 	}
 
 	@Override
-	public void drawIcon(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+	public void drawIcon(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
 		super.drawIcon(graphics, theme, x, y, w, h);
 
 		if (player.online()) {

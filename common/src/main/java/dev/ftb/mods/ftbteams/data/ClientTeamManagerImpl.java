@@ -225,6 +225,6 @@ public class ClientTeamManagerImpl implements ClientTeamManager {
 	}
 
 	private KnownClientPlayer updateFrom(UUID id, KnownClientPlayer other) {
-		return new KnownClientPlayer(other.online(), other.teamId(), new GameProfile(id, other.name()), other.extraData());
+		return new KnownClientPlayer(other.online(), other.teamId(), new GameProfile(id, other.name()));
 	}
 }

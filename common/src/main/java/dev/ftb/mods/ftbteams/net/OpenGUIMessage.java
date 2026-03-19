@@ -1,7 +1,8 @@
 package dev.ftb.mods.ftbteams.net;
 
-import dev.architectury.networking.NetworkManager;
-import dev.ftb.mods.ftblibrary.util.NetworkHelper;
+import dev.ftb.mods.ftblibrary.platform.network.PacketContext;
+import dev.ftb.mods.ftblibrary.platform.network.Play2ServerNetworking;
+import dev.ftb.mods.ftblibrary.platform.network.Server2PlayNetworking;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.data.PlayerPermissions;
 import net.minecraft.network.FriendlyByteBuf;
@@ -16,16 +17,14 @@ public record OpenGUIMessage() implements CustomPacketPayload {
 
 	public static final StreamCodec<FriendlyByteBuf, OpenGUIMessage> STREAM_CODEC = StreamCodec.unit(INSTANCE);
 
-	public static void handle(@SuppressWarnings("unused") OpenGUIMessage message, NetworkManager.PacketContext context) {
-		context.queue(() -> {
-			ServerPlayer player = (ServerPlayer) context.getPlayer();
+	public static void handle(@SuppressWarnings("unused") OpenGUIMessage message, PacketContext context) {
+			ServerPlayer player = (ServerPlayer) context.player();
 			FTBTeamsAPI.api().getManager().getTeamForPlayer(player)
-					.ifPresent(team -> NetworkHelper.sendTo(player, new OpenMyTeamGUIMessage(team.getProperties(), PlayerPermissions.forPlayer(player))));
-		});
+					.ifPresent(team -> Server2PlayNetworking.send(player, new OpenMyTeamGUIMessage(team.getProperties(), PlayerPermissions.forPlayer(player))));
 	}
 
 	public static void sendToServer() {
-		NetworkManager.sendToServer(INSTANCE);
+		Play2ServerNetworking.send(INSTANCE);
 	}
 
 	@Override

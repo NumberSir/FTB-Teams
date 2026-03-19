@@ -1,6 +1,6 @@
 package dev.ftb.mods.ftbteams.api;
 
-import dev.ftb.mods.ftbteams.api.event.TeamEvent;
+import dev.ftb.mods.ftblibrary.platform.event.NativeEventPosting;
 import dev.ftb.mods.ftbteams.api.event.TeamPropertiesChangedEvent;
 import dev.ftb.mods.ftbteams.api.property.TeamProperties;
 import dev.ftb.mods.ftbteams.api.property.TeamPropertyCollection;
@@ -117,7 +117,7 @@ public class TeamStagesHelper {
         if (changed > 0) {
             TeamPropertyCollection old = team.getProperties().copy();
             team.setProperty(TeamProperties.TEAM_STAGES, stageSet);
-            TeamEvent.PROPERTIES_CHANGED.invoker().accept(new TeamPropertiesChangedEvent(team, old));
+            NativeEventPosting.INSTANCE.postEvent(new TeamPropertiesChangedEvent.Data(team, old, false));
             team.syncOnePropertyToTeam(TeamProperties.TEAM_STAGES, stageSet);
         }
 

@@ -1,12 +1,11 @@
 package dev.ftb.mods.ftbteams.data;
 
+import dev.ftb.mods.ftblibrary.platform.event.NativeEventPosting;
 import dev.ftb.mods.ftbteams.api.TeamMessage;
 import dev.ftb.mods.ftbteams.api.TeamRank;
-import dev.ftb.mods.ftbteams.api.event.ClientTeamPropertiesChangedEvent;
-import dev.ftb.mods.ftbteams.api.event.TeamEvent;
+import dev.ftb.mods.ftbteams.api.event.TeamPropertiesChangedEvent;
 import dev.ftb.mods.ftbteams.api.property.TeamProperty;
 import dev.ftb.mods.ftbteams.api.property.TeamPropertyCollection;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
@@ -15,7 +14,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.BooleanSupplier;
 
 public class ClientTeam extends AbstractTeamBase {
@@ -46,7 +48,7 @@ public class ClientTeam extends AbstractTeamBase {
 	public static ClientTeam copyOf(AbstractTeam team) {
 		ClientTeam clientTeam = new ClientTeam(team.id, team.getOwner(), team.getType(), false, team.properties.copy());
 		clientTeam.ranks.putAll(team.ranks);
-		clientTeam.extraData = team.extraData.copy();
+//		clientTeam.extraData = team.extraData.copy();
 		return clientTeam;
 	}
 
@@ -128,7 +130,7 @@ public class ClientTeam extends AbstractTeamBase {
 		TeamPropertyCollection old = properties.copy();
 		properties.updateFrom(newProps);
 
-		TeamEvent.CLIENT_PROPERTIES_CHANGED.invoker().accept(new ClientTeamPropertiesChangedEvent(this, old));
+		NativeEventPosting.INSTANCE.postEvent(new TeamPropertiesChangedEvent.Data(this, old, true));
 	}
 
 	public void setFullSyncRequired(BooleanSupplier fullSyncSupplier) {
@@ -149,7 +151,7 @@ public class ClientTeam extends AbstractTeamBase {
 			clientTeam.addMember(buffer.readUUID(), buffer.readEnum(TeamRank.class));
 		}
 
-		clientTeam.extraData = Objects.requireNonNullElse(buffer.readNbt(), new CompoundTag());
+//		clientTeam.extraData = Objects.requireNonNullElse(buffer.readNbt(), new CompoundTag());
 
 		return clientTeam;
 	}
@@ -166,7 +168,7 @@ public class ClientTeam extends AbstractTeamBase {
 		buffer.writeBoolean(team.toBeRemoved);
 
 		if (team.fullSyncSupplier.getAsBoolean()) {
-			team.properties.write(buffer);
+			team.properties.toJson(buffer);
 		} else {
 			team.properties.writeSyncableOnly(buffer);
 		}
@@ -177,6 +179,6 @@ public class ClientTeam extends AbstractTeamBase {
 			buffer.writeEnum(entry.getValue());
 		}
 
-		buffer.writeNbt(team.extraData);
+//		buffer.writeNbt(team.extraData);
 	}
 }

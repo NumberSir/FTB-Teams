@@ -1,6 +1,6 @@
 package dev.ftb.mods.ftbteams.net;
 
-import dev.architectury.networking.NetworkManager;
+import dev.ftb.mods.ftblibrary.platform.network.PacketContext;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.client.KnownClientPlayer;
 import dev.ftb.mods.ftbteams.client.FTBTeamsClient;
@@ -17,8 +17,8 @@ public record UpdatePresenceMessage(KnownClientPlayer update) implements CustomP
 			UpdatePresenceMessage::new
 	);
 
-	public static void handle(UpdatePresenceMessage message, NetworkManager.PacketContext context) {
-		context.queue(() -> FTBTeamsClient.updatePresence(message.update));
+	public static void handle(UpdatePresenceMessage message, PacketContext ignored) {
+		FTBTeamsClient.updatePresence(message.update);
 	}
 
 	@Override

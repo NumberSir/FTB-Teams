@@ -11,7 +11,6 @@ public class KnownClientPlayerNet {
             ByteBufCodecs.BOOL, KnownClientPlayer::online,
             UUIDUtil.STREAM_CODEC, KnownClientPlayer::teamId,
             ByteBufCodecs.GAME_PROFILE, KnownClientPlayer::profile,
-            ByteBufCodecs.COMPOUND_TAG, KnownClientPlayer::extraData,
             KnownClientPlayer::new
     );
 }

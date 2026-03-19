@@ -1,6 +1,6 @@
 package dev.ftb.mods.ftbteams.net;
 
-import dev.architectury.networking.NetworkManager;
+import dev.ftb.mods.ftblibrary.platform.network.PacketContext;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.client.FTBTeamsClient;
 import net.minecraft.network.FriendlyByteBuf;
@@ -21,7 +21,7 @@ public record ToggleChatResponseMessage(boolean chatRedirected) implements Custo
         return TYPE;
     }
 
-    public static void handle(ToggleChatResponseMessage message, NetworkManager.PacketContext packetContext) {
-        packetContext.queue(() -> FTBTeamsClient.setChatRedirected(message.chatRedirected));
+    public static void handle(ToggleChatResponseMessage message, PacketContext ignored) {
+        FTBTeamsClient.setChatRedirected(message.chatRedirected);
     }
 }

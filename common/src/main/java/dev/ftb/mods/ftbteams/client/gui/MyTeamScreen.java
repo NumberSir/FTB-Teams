@@ -1,6 +1,5 @@
 package dev.ftb.mods.ftbteams.client.gui;
 
-import dev.architectury.networking.NetworkManager;
 import dev.ftb.mods.ftblibrary.client.config.EditableConfigGroup;
 import dev.ftb.mods.ftblibrary.client.config.editable.EditableColor;
 import dev.ftb.mods.ftblibrary.client.config.gui.EditConfigScreen;
@@ -12,6 +11,7 @@ import dev.ftb.mods.ftblibrary.client.gui.widget.*;
 import dev.ftb.mods.ftblibrary.client.icon.IconHelper;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftblibrary.icon.Icons;
+import dev.ftb.mods.ftblibrary.platform.network.Play2ServerNetworking;
 import dev.ftb.mods.ftblibrary.util.TooltipList;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.Team;
@@ -31,7 +31,7 @@ import dev.ftb.mods.ftbteams.net.ToggleChatRedirectionMessage;
 import dev.ftb.mods.ftbteams.net.UpdatePropertiesRequestMessage;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
 import org.lwjgl.glfw.GLFW;
@@ -165,14 +165,14 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 	}
 
 	@Override
-	public void drawBackground(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+	public void drawBackground(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
 		super.drawBackground(graphics, theme, x, y, w, h);
 		IconHelper.renderIcon(POLAR_NIGHT_0, graphics, x, y + 21, w, 1);
 		IconHelper.renderIcon(POLAR_NIGHT_0, graphics, x + memberPanel.width + 1, y + memberPanel.posY, 1, memberPanel.height + 1);
 	}
 
 	@Override
-	public void drawForeground(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+	public void drawForeground(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
 		super.drawForeground(graphics, theme, x, y, w, h);
 		theme.drawString(graphics, properties.get(TeamProperties.DISPLAY_NAME), x + w / 2, y + 7, SNOW_STORM_1, Theme.CENTERED);
 	}
@@ -233,7 +233,7 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 	private static class ToggleChatButton extends SimpleButton {
 		public ToggleChatButton(Panel panel) {
 			super(panel, Component.translatable("ftbteams.gui.toggle_chat"), Icons.CHAT,
-					(b, mb) -> NetworkManager.sendToServer(ToggleChatRedirectionMessage.INSTANCE)
+					(b, mb) -> Play2ServerNetworking.send(ToggleChatRedirectionMessage.INSTANCE)
 			);
 		}
 
@@ -303,7 +303,7 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 		}
 
 		@Override
-		public void drawBackground(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+		public void drawBackground(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
 			IconHelper.renderIcon(NordColors.POLAR_NIGHT_2, graphics, x, y, w, h);
 		}
 	}
@@ -314,13 +314,13 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 		}
 
 		@Override
-		public void drawTextBox(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+		public void drawTextBox(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
 			IconHelper.renderIcon(NordColors.POLAR_NIGHT_3, graphics, x, y, w, h);
 		}
 
 		@Override
 		public void onEnterPressed() {
-			NetworkManager.sendToServer(new SendMessageMessage(getText()));
+			Play2ServerNetworking.send(new SendMessageMessage(getText()));
 			setText("");
 			setFocused(true);
 		}
@@ -382,7 +382,7 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 		private static void onClick(MyTeamScreen screen) {
 			EditableConfigGroup config = new EditableConfigGroup("ftbteamsconfig", accepted -> {
 				if (accepted) {
-					NetworkManager.sendToServer(new UpdatePropertiesRequestMessage(screen.properties));
+					Play2ServerNetworking.send(new UpdatePropertiesRequestMessage(screen.properties));
 				}
 				screen.openGui();
 			});
@@ -403,7 +403,7 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 		}
 
 		@Override
-		public void draw(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+		public void draw(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
 			drawIcon(graphics, theme, x, y, w, h);
 		}
 	}
@@ -426,13 +426,13 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 					simpleButton.setIcon(c.withBorder(NordColors.POLAR_NIGHT_0, false));
 					TeamPropertyCollection properties = new TeamPropertyCollectionImpl();
 					properties.set(TeamProperties.COLOR, c);
-					NetworkManager.sendToServer(new UpdatePropertiesRequestMessage(properties));
+					Play2ServerNetworking.send(new UpdatePropertiesRequestMessage(properties));
 				}
 			});
 		}
 
 		@Override
-		public void draw(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+		public void draw(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
 			drawIcon(graphics, theme, x, y, w, h);
 		}
 	}

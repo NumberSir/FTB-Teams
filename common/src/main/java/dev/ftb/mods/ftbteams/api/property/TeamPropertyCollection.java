@@ -1,5 +1,7 @@
 package dev.ftb.mods.ftbteams.api.property;
 
+import dev.ftb.mods.ftbteams.api.event.CollectTeamPropertiesEvent;
+
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
@@ -45,7 +47,7 @@ public interface TeamPropertyCollection {
 
 	/**
 	 * Retrieve the value for the given property. All built-in properties are available at {@link TeamProperties}, but
-	 * other mods may register extra properties via {@link dev.ftb.mods.ftbteams.api.event.TeamCollectPropertiesEvent}.
+	 * other mods may register extra properties via {@link CollectTeamPropertiesEvent}.
 	 *
 	 * @param key the property to retrieve
 	 * @return the value for this property

@@ -11,7 +11,7 @@ import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftblibrary.icon.FaceIcon;
 import dev.ftb.mods.ftbteams.api.client.KnownClientPlayer;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
@@ -38,7 +38,7 @@ public class InvitedButton extends NordButton {
 	}
 
 	@Override
-	public void drawIcon(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+	public void drawIcon(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
 		super.drawIcon(graphics, theme, x, y, w, h);
 
 		if (player.online()) {

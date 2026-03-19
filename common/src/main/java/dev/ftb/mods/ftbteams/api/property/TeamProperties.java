@@ -2,13 +2,14 @@ package dev.ftb.mods.ftbteams.api.property;
 
 import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
+import dev.ftb.mods.ftbteams.api.event.CollectTeamPropertiesEvent;
 
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
 /**
  * These are the standard team properties which are registered for every team. Other mods may add additional properties;
- * see {@link dev.ftb.mods.ftbteams.api.event.TeamCollectPropertiesEvent}.
+ * see {@link CollectTeamPropertiesEvent}.
  */
 public class TeamProperties {
     public static final StringProperty DISPLAY_NAME

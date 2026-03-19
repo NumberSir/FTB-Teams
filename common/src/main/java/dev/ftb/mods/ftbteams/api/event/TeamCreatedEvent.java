@@ -5,37 +5,18 @@ import net.minecraft.server.level.ServerPlayer;
 import org.jspecify.annotations.Nullable;
 
 import java.util.UUID;
+import java.util.function.Consumer;
 
 /**
  * Fired server-side when a new team is created; could be a player, party, or server team.
  */
-public class TeamCreatedEvent extends TeamEvent {
-	@Nullable
-	private final ServerPlayer creator;
-	private final UUID creatorId;
-
-	public TeamCreatedEvent(Team team, @Nullable ServerPlayer creator, UUID creatorId) {
-		super(team);
-		this.creator = creator;
-		this.creatorId = creatorId;
-	}
-
-	/**
-	 * Get the player responsible for creation of the team.
-	 *
-	 * @return the creating player
-	 */
-	@Nullable
-	public ServerPlayer getCreator() {
-		return creator;
-	}
-
-	/**
-	 * Get the UUID of the player responsible for creation of the team.
-	 *
-	 * @return the creator's UUID
-	 */
-	public UUID getCreatorId() {
-		return creatorId;
+@FunctionalInterface
+public interface TeamCreatedEvent extends Consumer<TeamCreatedEvent.Data> {
+    /**
+     * @param team the team that has just been created
+     * @param creator the player who created the team (this may be null for a server team created via console)
+     * @param creatorId UUID of the creator ({@code Util.NIL_UUID} if there is no player associated)
+     */
+	record Data(Team team, @Nullable ServerPlayer creator, UUID creatorId) {
 	}
 }

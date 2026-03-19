@@ -4,7 +4,6 @@ import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftbteams.api.property.TeamProperties;
 import dev.ftb.mods.ftbteams.api.property.TeamProperty;
 import dev.ftb.mods.ftbteams.api.property.TeamPropertyCollection;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -186,21 +185,20 @@ public interface Team {
         return false;
     }
 
-    /**
-     * Get any extension data that may exist in this team manager. This is empty by default, but other mods can use
-     * this to store mod-specific data where necessary.
-     * <p>
-     * This data is serialized along with the rest of the team data so persists across server restarts, but if you change
-     * any data in the compound tag returned by this method, you should call {@link #markDirty()} to ensure your changes
-     * actually get saved.
-     *
-     * @return extension data for the team
-     */
-    CompoundTag getExtraData();
+//    /**
+//     * Get any extension data that may exist in this team manager. This is empty by default, but other mods can use
+//     * this to store mod-specific data where necessary.
+//     * <p>
+//     * This data is serialized along with the rest of the team data so persists across server restarts, but if you change
+//     * any data in the compound tag returned by this method, you should call {@link #markDirty()} to ensure your changes
+//     * actually get saved.
+//     *
+//     * @return extension data for the team
+//     */
+//    CompoundTag getExtraData();
 
     /**
-     * Mark the team as requiring serialization. The only time this should be necessary to call is if you change
-     * any data in the compound returned by {@link #getExtraData()}.
+     * Mark the team as requiring serialization. It should not normally be necessary to call this directly.
      */
     void markDirty();
 

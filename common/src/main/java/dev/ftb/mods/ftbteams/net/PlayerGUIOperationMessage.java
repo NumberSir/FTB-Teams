@@ -2,7 +2,8 @@ package dev.ftb.mods.ftbteams.net;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import dev.architectury.networking.NetworkManager;
+import dev.ftb.mods.ftblibrary.platform.network.PacketContext;
+import dev.ftb.mods.ftblibrary.platform.network.Play2ServerNetworking;
 import dev.ftb.mods.ftblibrary.util.NetworkHelper;
 import dev.ftb.mods.ftbteams.FTBTeams;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
@@ -40,18 +41,16 @@ public record PlayerGUIOperationMessage(Operation op, List<UUID> targets) implem
         return new PlayerGUIOperationMessage(op, targets.stream().map(GameProfile::id).toList());
     }
 
-    public static void handle(PlayerGUIOperationMessage message, NetworkManager.PacketContext context) {
-        context.queue(() -> {
-            if (!(context.getPlayer() instanceof ServerPlayer serverPlayer)) return;
+    public static void handle(PlayerGUIOperationMessage message, PacketContext context) {
+            if (!(context.player() instanceof ServerPlayer serverPlayer)) return;
 
-            UUID senderId = context.getPlayer().getUUID();
+            UUID senderId = serverPlayer.getUUID();
             FTBTeamsAPI.api().getManager().getTeamForPlayerID(senderId).ifPresent(team -> {
                 if (team instanceof PartyTeam partyTeam) {
                     TeamRank senderRank = partyTeam.getRankForPlayer(serverPlayer.getUUID());
                     message.targets.forEach(target -> processTarget(serverPlayer, senderRank, partyTeam, message.op, target));
                 }
             });
-        });
     }
 
     private static void processTarget(ServerPlayer sourcePlayer, TeamRank senderRank, PartyTeam partyTeam, Operation op, UUID targetId) {
@@ -110,7 +109,7 @@ public record PlayerGUIOperationMessage(Operation op, List<UUID> targets) implem
             }
         } catch (CommandSyntaxException e) {
             // TODO send proper response packet?
-            sourcePlayer.displayClientMessage(Component.literal(e.getMessage()).withStyle(ChatFormatting.RED), false);
+            sourcePlayer.sendSystemMessage(Component.literal(e.getMessage()).withStyle(ChatFormatting.RED));
         }
     }
 
@@ -140,7 +139,7 @@ public record PlayerGUIOperationMessage(Operation op, List<UUID> targets) implem
         }
 
         public void sendMessage(KnownClientPlayer target) {
-            NetworkManager.sendToServer(PlayerGUIOperationMessage.forUUID(this, target.id()));
+            Play2ServerNetworking.send(PlayerGUIOperationMessage.forUUID(this, target.id()));
         }
     }
 }

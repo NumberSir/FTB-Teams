@@ -1,11 +1,8 @@
 package dev.ftb.mods.ftbteams.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import dev.architectury.event.EventResult;
-import dev.architectury.event.events.client.ClientRawInputEvent;
-import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
-import dev.ftb.mods.ftblibrary.client.gui.CustomClickEvent;
 import dev.ftb.mods.ftblibrary.client.util.ClientUtils;
+import dev.ftb.mods.ftblibrary.platform.client.PlatformClient;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.TeamMessage;
 import dev.ftb.mods.ftbteams.api.client.KnownClientPlayer;
@@ -16,7 +13,6 @@ import dev.ftb.mods.ftbteams.data.PlayerPermissions;
 import dev.ftb.mods.ftbteams.net.OpenGUIMessage;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
@@ -32,29 +28,16 @@ public class FTBTeamsClient {
 
 	public static void init() {
 		registerKeys();
-
-		CustomClickEvent.EVENT.register(event -> {
-			if (event.id().equals(OPEN_GUI_ID)) {
-				OpenGUIMessage.sendToServer();
-				return EventResult.interruptTrue();
-			}
-			return EventResult.pass();
-		});
-
-		ClientRawInputEvent.KEY_PRESSED.register(FTBTeamsClient::keyPressed);
 	}
 
 	private static void registerKeys() {
-		KeyMappingRegistry.register(openTeamsKey);
+		PlatformClient.get().registerKeyMapping(FTBTeamsAPI.MOD_ID, openTeamsKey);
 	}
 
-	private static EventResult keyPressed(Minecraft client, int keycode, KeyEvent event) {
+	public static void keyPressed(Minecraft ignoredClient) {
 		if (openTeamsKey.isDown()) {
 			OpenGUIMessage.sendToServer();
-			return EventResult.interruptTrue();
 		}
-
-		return EventResult.pass();
 	}
 
 	public static void openMyTeamGui(TeamPropertyCollection properties, PlayerPermissions permissions) {

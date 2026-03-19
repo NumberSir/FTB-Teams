@@ -1,12 +1,14 @@
 package dev.ftb.mods.ftbteams.api.property;
 
+import de.marhali.json5.Json5Element;
+import de.marhali.json5.Json5Primitive;
 import dev.ftb.mods.ftblibrary.client.config.EditableConfigGroup;
 import dev.ftb.mods.ftblibrary.client.config.editable.EditableConfigValue;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import dev.ftb.mods.ftbteams.api.event.CollectTeamPropertiesEvent;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -14,7 +16,7 @@ import java.util.function.Supplier;
 /**
  * Represents an individual property; the combination of a unique ID, and the default value for the property.
  * Properties should be declared statically by a mod (see {@link TeamProperties} as an example), and registered via
- * the {@link dev.ftb.mods.ftbteams.api.event.TeamCollectPropertiesEvent} event.
+ * the {@link CollectTeamPropertiesEvent} event.
  *
  * @param <T> the type of value that the property holds
  */
@@ -174,18 +176,18 @@ public abstract class TeamProperty<T> {
 	 * @param value the value to write
 	 * @return the tag
 	 */
-    public Tag toNBT(T value) {
-        return StringTag.valueOf(toString(value));
+    public Json5Element toJson(T value) {
+		return Json5Primitive.fromString(toString(value));
     }
 
 	/**
 	 * Read one value of this property from a NBT tag.
 	 *
-	 * @param tag the tag to read from
+	 * @param json the tag to read from
 	 * @return the value that has been read
 	 */
-    public Optional<T> fromNBT(Tag tag) {
-        return fromString(tag.asString().orElseThrow());
+    public Optional<T> fromJson(@UnknownNullability Json5Element json) {
+        return fromString(json.getAsString());
     }
 
 	/**
@@ -221,18 +223,18 @@ public abstract class TeamProperty<T> {
 		return id.toString();
 	}
 
-	@Deprecated(forRemoval = true)
-	public TeamPropertyValue<T> createDefaultValue() {
-		return new TeamPropertyValue<>(this, getDefaultValue());
-	}
-
-	@Deprecated(forRemoval = true)
-	public TeamPropertyValue<T> createValueFromNetwork(RegistryFriendlyByteBuf buf) {
-		return new TeamPropertyValue<>(this, readValue(buf));
-	}
-
-	@Deprecated(forRemoval = true)
-	public TeamPropertyValue<T> createValueFromNBT(Tag tag) {
-		return new TeamPropertyValue<>(this, fromNBT(tag).orElse(getDefaultValue()));
-	}
+//	@Deprecated(forRemoval = true)
+//	public TeamPropertyValue<T> createDefaultValue() {
+//		return new TeamPropertyValue<>(this, getDefaultValue());
+//	}
+//
+//	@Deprecated(forRemoval = true)
+//	public TeamPropertyValue<T> createValueFromNetwork(RegistryFriendlyByteBuf buf) {
+//		return new TeamPropertyValue<>(this, readValue(buf));
+//	}
+//
+//	@Deprecated(forRemoval = true)
+//	public TeamPropertyValue<T> createValueFromNBT(Tag tag) {
+//		return new TeamPropertyValue<>(this, fromJson(tag).orElse(getDefaultValue()));
+//	}
 }
