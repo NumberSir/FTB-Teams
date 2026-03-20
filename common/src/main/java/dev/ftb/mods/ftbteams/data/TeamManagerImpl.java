@@ -332,13 +332,11 @@ public class TeamManagerImpl implements TeamManager {
 		}
 	}
 
-	/**
-	 * Sync team information about all teams to one player, along with that player's team's message history.
-	 * Called on player login.
-	 *
-	 * @param player player to sync to
-	 * @param selfTeam the player's own team, which could be a party team
-	 */
+	/// Sync team information about all teams to one player, along with that player's team's message history.
+	/// Called on player login.
+	///
+	/// @param player player to sync to
+	/// @param selfTeam the player's own team, which could be a party team
 	public void syncAllToPlayer(ServerPlayer player, AbstractTeam selfTeam) {
 		ClientTeamManagerImpl manager = ClientTeamManagerImpl.forSyncing(this, teamMap.values());
 
@@ -348,12 +346,10 @@ public class TeamManagerImpl implements TeamManager {
 		server.getPlayerList().sendPlayerPermissionLevel(player);
 	}
 
-	/**
-	 * Sync only the given team(s) to all players. Called when one or more teams are modified in any way. In practice,
-	 * this will always be one or two teams (two when a player is joining or leaving a team).
-	 *
-	 * @param teams the teams to sync, which may have been deleted already
-	 */
+	/// Sync only the given team(s) to all players. Called when one or more teams are modified in any way. In practice,
+	/// this will always be one or two teams (two when a player is joining or leaving a team).
+	///
+	/// @param teams the teams to sync, which may have been deleted already
 	public void syncToAll(Team... teams) {
 		if (teams.length == 0) return;
 

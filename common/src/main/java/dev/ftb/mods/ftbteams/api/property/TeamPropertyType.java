@@ -11,12 +11,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Represents the unique type for a {@link TeamProperty}. This is distinct from the property <em>value</em> type, and is
- * used for network encoding/decoding.
- *
- * @param <T>
- */
+/// Represents the unique type for a [TeamProperty]. This is distinct from the property _value_ type, and is
+/// used for network encoding/decoding.
+///
+/// @param <T>
 public class TeamPropertyType<T> {
 	private static final Map<Identifier, TeamPropertyType<?>> MAP = new ConcurrentHashMap<>();
 
@@ -66,13 +64,11 @@ public class TeamPropertyType<T> {
 		return register(FTBTeamsAPI.id(id), deserializer);
 	}
 
-	/**
-	 * Register a new type. This is safe to do via a static initializer.
-	 *
-	 * @param id the type ID
-	 * @param deserializer the property deserializer, which must be able to read a property from the network
-	 * @return the type that has just been registered
-	 */
+	/// Register a new type. This is safe to do via a static initializer.
+	///
+	/// @param id the type ID
+	/// @param deserializer the property deserializer, which must be able to read a property from the network
+	/// @return the type that has just been registered
 	public static <Y> TeamPropertyType<Y> register(Identifier id, FromNet<Y> deserializer) {
 		TeamPropertyType<Y> t = new TeamPropertyType<>(id, deserializer);
 		if (MAP.containsKey(id)) {

@@ -19,9 +19,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
-/**
- * Base class for all teams, client and server side
- */
+/// Base class for all teams, client and server side
 public abstract class AbstractTeamBase implements Team {
 	protected final UUID id;
 	protected final TeamPropertyCollectionImpl properties;

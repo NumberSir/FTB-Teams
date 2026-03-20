@@ -3,11 +3,9 @@ package dev.ftb.mods.ftbteams.api.property;
 import de.marhali.json5.Json5Element;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 
-/**
- * Represents a keyed property value, including both the property instance, and a mutable value of that property.
- *
- * @param <T> the value type
- */
+/// Represents a keyed property value, including both the property instance, and a mutable value of that property.
+///
+/// @param <T> the value type
 public final class TeamPropertyValue<T> {
 	private final TeamProperty<T> property;
 	private T value;

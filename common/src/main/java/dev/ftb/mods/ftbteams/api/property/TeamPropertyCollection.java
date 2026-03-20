@@ -5,69 +5,53 @@ import dev.ftb.mods.ftbteams.api.event.CollectTeamPropertiesEvent;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
-/**
- * Represents the collection of properties that a team has. All teams have the same properties, but of course
- * the values of each property will vary from team to team.
- * <p>
- * Instances of this class can be retrieved via {@link dev.ftb.mods.ftbteams.api.Team#getProperties()}.
- * </p>
- */
+/// Represents the collection of properties that a team has. All teams have the same properties, but of course
+/// the values of each property will vary from team to team.
+///
+/// Instances of this class can be retrieved via [dev.ftb.mods.ftbteams.api.Team#getProperties()].
+///
 public interface TeamPropertyCollection {
-	/**
-	 * Iterate over all the properties in this collection.
-	 *
-	 * @param consumer the consumer to call for each property and value pair
-	 * @param <T> the property type
-	 */
+	/// Iterate over all the properties in this collection.
+	///
+	/// @param consumer the consumer to call for each property and value pair
+	/// @param <T> the property type
 	<T> void forEach(BiConsumer<TeamProperty<T>, TeamPropertyValue<T>> consumer);
 
-	/**
-	 * Create a new TeamPropertyCollection, which is a copy of this one.
-	 *
-	 * @return a copy of this collection
-	 */
+	/// Create a new TeamPropertyCollection, which is a copy of this one.
+	///
+	/// @return a copy of this collection
 	TeamPropertyCollection copy();
 
-	/**
-	 * Create a new TeamPropertyCollection, which is a copy of this one, but containing only properties which are
-	 * matched by the given predicate.
-	 *
-	 * @param predicate the predicate to test properties in the collection
-	 * @return a new TeamPropertyCollection object
-	 */
+	/// Create a new TeamPropertyCollection, which is a copy of this one, but containing only properties which are
+	/// matched by the given predicate.
+	///
+	/// @param predicate the predicate to test properties in the collection
+	/// @return a new TeamPropertyCollection object
 	TeamPropertyCollection copyIf(Predicate<TeamProperty<?>> predicate);
 
-	/**
-	 * Update this collection's properties from the supplied property collection. Property values in
-	 * {@code otherProperties} override properties in this object.
-	 *
-	 * @param otherProperties the collection to update from
-	 */
+	/// Update this collection's properties from the supplied property collection. Property values in
+	/// `otherProperties` override properties in this object.
+	///
+	/// @param otherProperties the collection to update from
 	void updateFrom(TeamPropertyCollection otherProperties);
 
-	/**
-	 * Retrieve the value for the given property. All built-in properties are available at {@link TeamProperties}, but
-	 * other mods may register extra properties via {@link CollectTeamPropertiesEvent}.
-	 *
-	 * @param key the property to retrieve
-	 * @return the value for this property
-	 * @param <T> the property type
-	 */
+	/// Retrieve the value for the given property. All built-in properties are available at [TeamProperties], but
+	/// other mods may register extra properties via [CollectTeamPropertiesEvent].
+	///
+	/// @param key the property to retrieve
+	/// @return the value for this property
+	/// @param <T> the property type
 	<T> T get(TeamProperty<T> key);
 
-	/**
-	 * Set a new value for the given property.
-	 *
-	 * @param key the property to update
-	 * @param value the new value
-	 * @param <T> the property type
-	 */
+	/// Set a new value for the given property.
+	///
+	/// @param key the property to update
+	/// @param value the new value
+	/// @param <T> the property type
 	<T> void set(TeamProperty<T> key, T value);
 
-	/**
-	 * Get the number of properties in this collection.
-	 *
-	 * @return the number of properties
-	 */
+	/// Get the number of properties in this collection.
+	///
+	/// @return the number of properties
 	int size();
 }

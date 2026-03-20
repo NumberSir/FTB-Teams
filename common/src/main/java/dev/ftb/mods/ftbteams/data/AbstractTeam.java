@@ -35,9 +35,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 
-/**
- * Base class for server-side teams
- */
+/// Base class for server-side teams
 public abstract class AbstractTeam extends AbstractTeamBase {
 	protected final TeamManagerImpl manager;
 	private boolean shouldSave;

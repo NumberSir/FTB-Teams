@@ -17,29 +17,23 @@ public class FTBTeamsAPI {
 	@Nullable
 	private static API instance;
 
-	/**
-	 * Retrieve the public API instance.
-	 *
-	 * @return the API handler
-	 */
+	/// Retrieve the public API instance.
+	///
+	/// @return the API handler
 	public static FTBTeamsAPI.API api() {
 		return Objects.requireNonNull(instance);
 	}
 
-	/**
-	 * Convenience method to get a resource location in the FTB Teams namespace
-	 *
-	 * @param path the resource location path component
-	 * @return a new resource location
-	 */
+	/// Convenience method to get a resource location in the FTB Teams namespace
+	///
+	/// @param path the resource location path component
+	/// @return a new resource location
 	public static Identifier id(String path) {
 		return Identifier.fromNamespaceAndPath(MOD_ID, path);
 	}
 
-	/**
-	 * Do not call this method yourself!
-	 * @param instance the API instance
-	 */
+	/// Do not call this method yourself!
+	/// @param instance the API instance
 	@ApiStatus.Internal
 	public static void _init(API instance) {
 		if (FTBTeamsAPI.instance != null) {
@@ -48,62 +42,48 @@ public class FTBTeamsAPI {
 		FTBTeamsAPI.instance = instance;
 	}
 
-	/**
-	 * Top-level API. Retrieve an instance of this via {@link FTBTeamsAPI#api()}.
-	 */
+	/// Top-level API. Retrieve an instance of this via [FTBTeamsAPI#api()].
 	public interface API {
-		/**
-		 * Check if the server-side team manager is loaded. This will always be the case on the server once the
-		 * {@link TeamManagerEvent} event has been fired with an action of
-		 * {@link dev.ftb.mods.ftbteams.api.event.TeamManagerEvent.Action.CREATED} (fired when the server is about
-		 * to start).
-		 *
-		 * @return true if the team manager exists, false otherwise
-		 */
+		/// Check if the server-side team manager is loaded. This will always be the case on the server once the
+		/// [TeamManagerEvent] event has been fired with an action of
+		/// [dev.ftb.mods.ftbteams.api.event.TeamManagerEvent.Action.CREATED] (fired when the server is about
+		/// to start).
+		///
+		/// @return true if the team manager exists, false otherwise
 		boolean isManagerLoaded();
 
-		/**
-		 * Get the server-side team manager instance.
-		 *
-		 * @return the team manager
-		 * @throws NullPointerException if the manager is not yet loaded (server not started), or this is called from the client
-		 */
+		/// Get the server-side team manager instance.
+		///
+		/// @return the team manager
+		/// @throws NullPointerException if the manager is not yet loaded (server not started), or this is called from the client
 		TeamManager getManager();
 
-		/**
-		 * Check if the client-side team manager is loaded. This will true once the client has received the sync'd
-		 * server-side data from the server, which occurs when the player connects.
-		 *
-		 * @return true if the client team manager exists, false otherwise
-		 */
+		/// Check if the client-side team manager is loaded. This will true once the client has received the sync'd
+		/// server-side data from the server, which occurs when the player connects.
+		///
+		/// @return true if the client team manager exists, false otherwise
 		boolean isClientManagerLoaded();
 
-		/**
-		 * Get the client-side team manager instance.
-		 *
-		 * @return the client team manager
-		 * @throws NullPointerException if the manager is not yet loaded, or this is called from the client
-		 */
+		/// Get the client-side team manager instance.
+		///
+		/// @return the client team manager
+		/// @throws NullPointerException if the manager is not yet loaded, or this is called from the client
 		ClientTeamManager getClientManager();
 
-		/**
-		 * By setting api-only team creation to true, this prevents players from creating party teams using either the
-		 * command interface or GUI interface of FTB Teams. Parties will only be creatable by other mods via the
-		 * FTB Teams API. This is intended for use with custom modpacks which link party creation with e.g. base
-		 * creation.
-		 * <p>
-		 * By default, FTB Teams allows party creation via all methods.
-		 *
-		 * @param apiOnly true to allow party creation via API only, false to allow normal creation
-		 */
+		/// By setting api-only team creation to true, this prevents players from creating party teams using either the
+		/// command interface or GUI interface of FTB Teams. Parties will only be creatable by other mods via the
+		/// FTB Teams API. This is intended for use with custom modpacks which link party creation with e.g. base
+		/// creation.
+		///
+		/// By default, FTB Teams allows party creation via all methods.
+		///
+		/// @param apiOnly true to allow party creation via API only, false to allow normal creation
 		void setPartyCreationFromAPIOnly(boolean apiOnly);
 
-		/**
-		 * Create a team message with a timestamp of the current system time.
-		 * @param sender the sending player
-		 * @param text the message content
-		 * @return a new TeamMessage object
-		 */
+		/// Create a team message with a timestamp of the current system time.
+		/// @param sender the sending player
+		/// @param text the message content
+		/// @return a new TeamMessage object
 		TeamMessage createMessage(UUID sender, Component text);
 	}
 }

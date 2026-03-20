@@ -7,10 +7,8 @@ import dev.ftb.mods.ftbteams.api.event.CollectTeamPropertiesEvent;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
-/**
- * These are the standard team properties which are registered for every team. Other mods may add additional properties;
- * see {@link CollectTeamPropertiesEvent}.
- */
+/// These are the standard team properties which are registered for every team. Other mods may add additional properties;
+/// see [CollectTeamPropertiesEvent].
 public class TeamProperties {
     public static final StringProperty DISPLAY_NAME
             = (StringProperty) new StringProperty(FTBTeamsAPI.id("display_name"), "", Pattern.compile(".{3,}"))

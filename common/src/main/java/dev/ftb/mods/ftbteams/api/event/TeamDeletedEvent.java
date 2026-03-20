@@ -6,9 +6,7 @@ import java.util.function.Consumer;
 
 @FunctionalInterface
 public interface TeamDeletedEvent extends Consumer<TeamDeletedEvent.Data> {
-    /**
-     * @param team the team that has just been deleted
-     */
+    /// @param team the team that has just been deleted
     record Data(Team team) {
     }
 }
