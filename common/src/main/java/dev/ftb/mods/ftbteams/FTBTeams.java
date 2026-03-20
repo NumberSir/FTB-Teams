@@ -2,9 +2,9 @@ package dev.ftb.mods.ftbteams;
 
 import com.mojang.brigadier.CommandDispatcher;
 import de.marhali.json5.Json5Object;
+import dev.ftb.mods.ftblibrary.json5.Json5Ops;
 import dev.ftb.mods.ftblibrary.nbtedit.NBTEditResponseHandlers;
 import dev.ftb.mods.ftblibrary.platform.event.NativeEventPosting;
-import dev.ftb.mods.ftblibrary.util.Json5Ops;
 import dev.ftb.mods.ftblibrary.util.result.Outcome;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.event.CollectTeamPropertiesEvent;
