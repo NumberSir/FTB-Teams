@@ -1,19 +1,26 @@
 package dev.ftb.mods.ftbteams;
 
 import com.mojang.brigadier.CommandDispatcher;
+import de.marhali.json5.Json5Object;
+import dev.ftb.mods.ftblibrary.nbtedit.NBTEditResponseHandlers;
 import dev.ftb.mods.ftblibrary.platform.event.NativeEventPosting;
+import dev.ftb.mods.ftblibrary.util.Json5Ops;
 import dev.ftb.mods.ftblibrary.util.result.Outcome;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.event.CollectTeamPropertiesEvent;
 import dev.ftb.mods.ftbteams.api.event.TeamManagerEvent;
 import dev.ftb.mods.ftbteams.api.property.TeamProperties;
 import dev.ftb.mods.ftbteams.command.FTBTeamsCommands;
+import dev.ftb.mods.ftbteams.data.AbstractTeam;
 import dev.ftb.mods.ftbteams.data.TeamManagerImpl;
 import dev.ftb.mods.ftbteams.net.FTBTeamsNet;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import org.apache.logging.log4j.LogManager;
@@ -25,6 +32,8 @@ import java.io.IOException;
 public class FTBTeams {
 	public static final Logger LOGGER = LogManager.getLogger(FTBTeamsAPI.MOD_NAME);
 
+	private static final Identifier TEAM_RESPONSE_HANDLER = FTBTeamsAPI.id("team");
+
 	public FTBTeams() {
 		FTBTeamsAPI._init(FTBTeamsAPIImpl.INSTANCE);
 
@@ -32,13 +41,13 @@ public class FTBTeams {
 	}
 
 	public void serverStarted(MinecraftServer server) {
-//		NBTEditResponseHandlers.INSTANCE.registerHandler("ftbteams:team", (serverPlayer, info, data) ->
-//				info.read("id", UUIDUtil.CODEC).flatMap(e -> FTBTeamsAPI.api().getManager().getTeamByID(e)).ifPresent(team -> {
-//					if (team instanceof AbstractTeam abstractTeam) {
-//						abstractTeam.deserializeJson(data, server.registryAccess());
-//						abstractTeam.markDirty();
-//					}
-//				}));
+		NBTEditResponseHandlers.INSTANCE.registerHandler(TEAM_RESPONSE_HANDLER, (ignoredPlayer, info, data) ->
+				info.read("id", UUIDUtil.CODEC).flatMap(uuid -> FTBTeamsAPI.api().getManager().getTeamByID(uuid)).ifPresent(team -> {
+                    if (team instanceof AbstractTeam abstractTeam && NbtOps.INSTANCE.convertTo(Json5Ops.INSTANCE, data) instanceof Json5Object json) {
+                        abstractTeam.deserializeJson(json, server.registryAccess());
+                        abstractTeam.markDirty();
+                    }
+				}));
 	}
 
 	public void serverAboutToStart(MinecraftServer server) {
