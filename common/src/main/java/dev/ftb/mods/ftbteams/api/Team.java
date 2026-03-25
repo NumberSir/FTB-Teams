@@ -145,18 +145,6 @@ public interface Team {
         return false;
     }
 
-//    /**
-//     * Get any extension data that may exist in this team manager. This is empty by default, but other mods can use
-//     * this to store mod-specific data where necessary.
-//     * <p>
-//     * This data is serialized along with the rest of the team data so persists across server restarts, but if you change
-//     * any data in the compound tag returned by this method, you should call {@link #markDirty()} to ensure your changes
-//     * actually get saved.
-//     *
-//     * @return extension data for the team
-//     */
-//    CompoundTag getExtraData();
-
     /// Mark the team as requiring serialization. It should not normally be necessary to call this directly.
     void markDirty();
 

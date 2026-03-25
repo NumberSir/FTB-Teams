@@ -151,8 +151,6 @@ public class ClientTeam extends AbstractTeamBase {
 			clientTeam.addMember(buffer.readUUID(), buffer.readEnum(TeamRank.class));
 		}
 
-//		clientTeam.extraData = Objects.requireNonNullElse(buffer.readNbt(), new CompoundTag());
-
 		return clientTeam;
 	}
 

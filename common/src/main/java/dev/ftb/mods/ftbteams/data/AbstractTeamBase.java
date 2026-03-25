@@ -24,7 +24,6 @@ public abstract class AbstractTeamBase implements Team {
 	protected final UUID id;
 	protected final TeamPropertyCollectionImpl properties;
 	protected final Map<UUID, TeamRank> ranks;
-//	protected CompoundTag extraData;
 	protected final List<TeamMessage> messageHistory;
 	private boolean valid;
 
@@ -36,7 +35,6 @@ public abstract class AbstractTeamBase implements Team {
 		this.id = id;
 		this.properties = properties instanceof TeamPropertyCollectionImpl p ? p : new TeamPropertyCollectionImpl();
 		ranks = new HashMap<>();
-//		extraData = new CompoundTag();
 		messageHistory = new LinkedList<>();
 		valid = true;
 	}
@@ -78,11 +76,6 @@ public abstract class AbstractTeamBase implements Team {
 	public String toString() {
 		return getShortName();
 	}
-
-//	@Override
-//	public CompoundTag getExtraData() {
-//		return extraData;
-//	}
 
 	@Override
 	public <T> T getProperty(TeamProperty<T> property) {

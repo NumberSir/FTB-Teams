@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /// Fired when one or more players are added or removed as allies for a team.
+///
+/// Corresponding platform-native events to listen to:
+/// * `FTBTeamsEvent.TeamAlly` (NeoForge)
+/// * `FTBTeamsEvents.TEAM_ALLY` (Fabric)
 @FunctionalInterface
 public interface TeamAllyEvent extends Consumer<TeamAllyEvent.Data> {
     /// @param team the team

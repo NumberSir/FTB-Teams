@@ -37,7 +37,6 @@ public class InfoCommand {
 
         lines.forEach(line -> source.sendSuccess(() -> line, false));
 
-//        TeamEvent.INFO.invoker().accept(new TeamInfoEvent(team, source));
         return Command.SINGLE_SUCCESS;
     }
 

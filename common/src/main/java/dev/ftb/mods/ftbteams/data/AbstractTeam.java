@@ -268,10 +268,6 @@ public abstract class AbstractTeam extends AbstractTeamBase {
 		}
 	}
 
-//	void copyExtraData(Team from) {
-//		extraData = from.getExtraData().copy();
-//	}
-
 	@Override
 	public <T> void syncOnePropertyToAll(MinecraftServer server, TeamProperty<T> property, T value) {
 		if (property.shouldSyncToAll()) {

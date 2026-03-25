@@ -46,7 +46,7 @@ public class FTBTeamsAPI {
 	public interface API {
 		/// Check if the server-side team manager is loaded. This will always be the case on the server once the
 		/// [TeamManagerEvent] event has been fired with an action of
-		/// [dev.ftb.mods.ftbteams.api.event.TeamManagerEvent.Action.CREATED] (fired when the server is about
+		/// [TeamManagerEvent.Action.CREATED] (fired when the server is about
 		/// to start).
 		///
 		/// @return true if the team manager exists, false otherwise

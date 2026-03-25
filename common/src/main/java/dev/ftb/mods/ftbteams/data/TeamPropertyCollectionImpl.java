@@ -44,7 +44,6 @@ public class TeamPropertyCollectionImpl implements TeamPropertyCollection {
 		map.clear();
 
 		NativeEventPosting.INSTANCE.postEvent(new CollectTeamPropertiesEvent.Data(map::putDefaultProperty));
-//		TeamEvent.COLLECT_PROPERTIES.invoker().accept(new TeamCollectPropertiesEvent(map::putDefaultProperty));
 	}
 
 	@Override

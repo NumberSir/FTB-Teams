@@ -8,6 +8,10 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 /// Fired server-side when a new team is created; could be a player, party, or server team.
+///
+/// Corresponding platform-native events to listen to:
+/// * `FTBTeamsEvent.TeamCreated` (NeoForge)
+/// * `FTBTeamsEvents.TEAM_CREATED` (Fabric)
 @FunctionalInterface
 public interface TeamCreatedEvent extends Consumer<TeamCreatedEvent.Data> {
     /// @param team the team that has just been created

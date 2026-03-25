@@ -74,18 +74,6 @@ public interface TeamManager {
     /// @return all known player teams
     Map<UUID, ? extends Team> getKnownPlayerTeams();
 
-//    /**
-//     * Get any extension data that may exist in this team manager. This is empty by default, but other mods can use
-//     * this to store manager-specific data where necessary.
-//     * <p>
-//     * This data is serialized along with the rest of the manager so persists across server restarts, but if you change
-//     * any data in the compound tag returned by this method, you should call {@link #markDirty()} to ensure your changes
-//     * actually get saved.
-//     *
-//     * @return extension data for the manager
-//     */
-//    CompoundTag getExtraData();
-
     /// Mark the manager as requiring serialization. The only time this should be necessary to call is if you change
     /// any data in the compound returned by [#getExtraData()].
     void markDirty();

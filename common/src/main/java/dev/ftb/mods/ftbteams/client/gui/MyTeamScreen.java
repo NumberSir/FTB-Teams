@@ -11,6 +11,7 @@ import dev.ftb.mods.ftblibrary.client.gui.widget.*;
 import dev.ftb.mods.ftblibrary.client.icon.IconHelper;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftblibrary.icon.Icons;
+import dev.ftb.mods.ftblibrary.platform.event.NativeEventPosting;
 import dev.ftb.mods.ftblibrary.platform.network.Play2ServerNetworking;
 import dev.ftb.mods.ftblibrary.util.TooltipList;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
@@ -19,6 +20,7 @@ import dev.ftb.mods.ftbteams.api.TeamMessage;
 import dev.ftb.mods.ftbteams.api.TeamRank;
 import dev.ftb.mods.ftbteams.api.client.ClientTeamManager;
 import dev.ftb.mods.ftbteams.api.client.KnownClientPlayer;
+import dev.ftb.mods.ftbteams.api.event.TeamInfoEvent;
 import dev.ftb.mods.ftbteams.api.property.TeamProperties;
 import dev.ftb.mods.ftbteams.api.property.TeamPropertyCollection;
 import dev.ftb.mods.ftbteams.client.FTBTeamsClient;
@@ -161,6 +163,8 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 			if (!team.getOwner().equals(Util.NIL_UUID)) {
 				list.add(Component.translatable("ftbteams.info.owner", getManager().formatName(team.getOwner())));
 			}
+
+			NativeEventPosting.INSTANCE.postEvent(new TeamInfoEvent.Data(team, list::add));
 		}
 	}
 

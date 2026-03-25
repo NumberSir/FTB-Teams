@@ -456,11 +456,6 @@ public class TeamManagerImpl implements TeamManager {
 		return Component.literal(team == null ? "Unknown" : team.getPlayerName()).withStyle(ChatFormatting.YELLOW);
 	}
 
-//	@Override
-//	public CompoundTag getExtraData() {
-//		return extraData;
-//	}
-
 	void deleteTeam(AbstractTeam team) {
 		teamMap.remove(team.getId());
 		markDirty();
