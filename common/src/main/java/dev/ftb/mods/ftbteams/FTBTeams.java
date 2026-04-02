@@ -56,7 +56,7 @@ public class FTBTeams {
 		try {
 			TeamManagerImpl.INSTANCE.load();
 		} catch (IOException e) {
-			FTBTeams.LOGGER.error("Load failure for ");
+			FTBTeams.LOGGER.error("Load failure for team manager: {}", e.getMessage());
 		}
 	}
 

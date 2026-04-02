@@ -258,8 +258,7 @@ public abstract class AbstractTeam extends AbstractTeamBase {
 	void saveIfNeeded(Path directory, HolderLookup.Provider provider) {
 		if (shouldSave) {
 			try {
-				Json5Util.tryWrite(directory.resolve(getType().getSerializedName() + "/" + getId() + ".snbt"), toJson(provider));
-
+				Json5Util.tryWrite(directory.resolve(getType().getSerializedName() + "/" + getId() + Json5Util.FILE_EXT), toJson(provider));
 				NativeEventPosting.INSTANCE.postEvent(new TeamSavedEvent.Data(this));
 			} catch (IOException e) {
 				FTBTeams.LOGGER.error("Failed to save team {}", getId(), e);

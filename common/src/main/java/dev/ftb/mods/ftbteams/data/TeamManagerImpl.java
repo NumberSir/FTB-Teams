@@ -136,15 +136,24 @@ public class TeamManagerImpl implements TeamManager {
 				.orElse(false);
 	}
 
+	private Path managerFile() {
+		return server.getWorldPath(FOLDER_NAME).resolve("ftbteams" + Json5Util.FILE_EXT);
+	}
+
 	public void load() throws IOException {
 		id = null;
-		Path directory = server.getWorldPath(FOLDER_NAME);
 
-		if (Files.notExists(directory) || !Files.isDirectory(directory)) {
-			return;
+		Path managerFile = managerFile();
+		Path directory = managerFile.getParent();
+
+		Files.createDirectories(managerFile.getParent());
+
+		if (!Files.exists(managerFile)) {
+			markDirty();
+			saveNow();
+			FTBTeams.LOGGER.info("Created initial manager file {}", managerFile);
 		}
-
-		Json5Object dataFileJson = Json5Util.tryRead(directory.resolve("ftbteams.snbt"));
+		Json5Object dataFileJson = Json5Util.tryRead(managerFile);
 
 		id = Json5Util.fetch(dataFileJson, "id", UUIDUtil.STRING_CODEC).orElseThrow();
 
@@ -170,14 +179,14 @@ public class TeamManagerImpl implements TeamManager {
 
 			if (Files.exists(dir) && Files.isDirectory(dir)) {
 				try (Stream<Path> s = Files.list(dir)) {
-					s.filter(path -> path.getFileName().toString().endsWith(".snbt")).forEach(file -> {
+					s.filter(path -> path.getFileName().toString().endsWith(Json5Util.FILE_EXT)).forEach(file -> {
                         try {
                             Json5Object teamJson = Json5Util.tryRead(file);
                             AbstractTeam team = type.createTeam(this, Json5Util.fetch(teamJson, "id", UUIDUtil.STRING_CODEC).orElseThrow());
 							teamMap.put(team.id, team);
 							team.deserializeJson(teamJson, server.registryAccess());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
+                        } catch (IOException ex) {
+							FTBTeams.LOGGER.error("can't read team file {}: {}", file, ex.getMessage());
                         }
 					});
 				} catch (Exception ex) {
@@ -221,10 +230,11 @@ public class TeamManagerImpl implements TeamManager {
 
 		if (shouldSave) {
 			NativeEventPosting.INSTANCE.postEvent(new TeamManagerEvent.Data(this, TeamManagerEvent.Action.SAVED));
-            try {
-                Json5Util.tryWrite(directory.resolve("ftbteams.snbt"), toJson());
+			Path path = managerFile();
+			try {
+				Json5Util.tryWrite(path, toJson());
             } catch (IOException e) {
-                FTBTeams.LOGGER.error("can't save ftbteams.snbt: {}", e.getMessage());
+                FTBTeams.LOGGER.error("can't save {}: {}", path, e.getMessage());
             }
             shouldSave = false;
 		}
@@ -245,7 +255,6 @@ public class TeamManagerImpl implements TeamManager {
 	public Json5Object toJson() {
 		Json5Object json = new Json5Object();
 		Json5Util.store(json, "id", UUIDUtil.STRING_CODEC, getId());
-//		json.add("extra", extraData);
 		json.add("chat_redirected", Util.make(new Json5Array(), l ->
 				chatRedirected.forEach(id -> l.add(Json5Primitive.fromString(id.toString()))))
 		);
@@ -460,7 +469,7 @@ public class TeamManagerImpl implements TeamManager {
 		teamMap.remove(team.getId());
 		markDirty();
 		saveNow();
-		tryDeleteTeamFile(team.getId() + ".snbt", team.getType().getSerializedName());
+		tryDeleteTeamFile(team.getId() + Json5Util.FILE_EXT, team.getType().getSerializedName());
 	}
 
 	private void tryDeleteTeamFile(String teamFileName, String subfolderName) {
