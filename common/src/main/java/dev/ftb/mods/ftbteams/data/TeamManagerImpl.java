@@ -2,6 +2,7 @@ package dev.ftb.mods.ftbteams.data;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import de.marhali.json5.Json5Array;
+import de.marhali.json5.Json5Element;
 import de.marhali.json5.Json5Object;
 import de.marhali.json5.Json5Primitive;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
@@ -233,7 +234,7 @@ public class TeamManagerImpl implements TeamManager {
 			NativeEventPosting.INSTANCE.postEvent(new TeamManagerEvent.Data(this, TeamManagerEvent.Action.SAVED));
 			Path path = managerFile();
 			try {
-				Json5Util.tryWrite(path, toJson());
+				Json5Util.tryWrite(path, (Json5Element) toJson());
             } catch (IOException e) {
                 FTBTeams.LOGGER.error("can't save {}: {}", path, e.getMessage());
             }

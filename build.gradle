@@ -72,6 +72,8 @@ subprojects {
 					"ftb_library_version_range_maven": ftb_library_version_range_maven
 		}
 	}
+
+	createMavenPublishingBlock(project)
 }
 
 idea {
