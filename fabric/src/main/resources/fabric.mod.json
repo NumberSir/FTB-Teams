@@ -21,8 +21,8 @@
 		]
 	},
 	"depends": {
-		"fabric-api": "${fabricapiversionrange}",
-		"minecraft": "~${mcversion}",
-		"ftblibrary": ">=${ftblibraryversion}"
+		"fabric-api": "${fabricapi_version_range}",
+		"minecraft": "${minecraft_version_range_semver}",
+		"ftblibrary": "${ftb_library_version_range_semver}"
 	}
 }

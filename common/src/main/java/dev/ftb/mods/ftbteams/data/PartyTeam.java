@@ -1,5 +1,6 @@
 package dev.ftb.mods.ftbteams.data;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import de.marhali.json5.Json5Object;
@@ -10,6 +11,8 @@ import dev.ftb.mods.ftbteams.api.Team;
 import dev.ftb.mods.ftbteams.api.TeamRank;
 import dev.ftb.mods.ftbteams.api.event.PlayerTransferredOwnershipEvent;
 import dev.ftb.mods.ftbteams.api.event.TeamAllyEvent;
+import dev.ftb.mods.ftbteams.api.property.TeamProperties;
+import dev.ftb.mods.ftbteams.config.ServerConfig;
 import dev.ftb.mods.ftbteams.command.TeamArgument;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -77,6 +80,10 @@ public class PartyTeam extends AbstractTeam {
 	public int join(@Nullable ServerPlayer player, NameAndId playerProfile) throws CommandSyntaxException {
 		UUID id = playerProfile.id();
 
+		if (ServerConfig.limitedLives().isPresent() && getProperty(TeamProperties.LIVES_REMAINING) <= 0) {
+			throw TeamArgument.OUT_OF_LIVES.create();
+		}
+
 		Team oldTeam = manager.getTeamForPlayerID(id)
 				.orElseThrow(() -> TeamArgument.TEAM_NOT_FOUND.create(playerProfile.name()));
 
@@ -103,6 +110,9 @@ public class PartyTeam extends AbstractTeam {
 			throw TeamArgument.NO_PERMISSION.create();
 		}
 
+		if (ServerConfig.limitedLives().isPresent() && getProperty(TeamProperties.LIVES_REMAINING) <= 0) {
+			throw TeamArgument.OUT_OF_LIVES.create();
+		}
 		for (NameAndId profile : profiles) {
 			FTBTeamsAPI.api().getManager().getTeamForPlayerID(profile.id()).ifPresent(team -> {
 				if (!(team instanceof PartyTeam)) {
@@ -402,5 +412,24 @@ public class PartyTeam extends AbstractTeam {
 				.withStyle(ChatFormatting.GOLD), false);
 
 		return Command.SINGLE_SUCCESS;
+	}
+
+	public void kickPlayerForcibly(ServerPlayer player) throws CommandSyntaxException {
+		CommandSourceStack stack = player.level().getServer().createCommandSourceStack();
+
+		if (getMembers().size() == 1) {
+			forceDisband(stack);
+		} else if (getMembers().size() > 1) {  // should always be the case
+			if (getRankForPlayer(player.getUUID()).isOwner()) {
+				// if player being kicked is the owner, first transfer ownership to next highest ranked player
+				List<GameProfile> members = getMembers().stream()
+						.sorted((o1, o2) -> Integer.compare(getRankForPlayer(o1).getPower(), getRankForPlayer(o2).getPower()))
+						.map(id -> new GameProfile(id, ""))
+						.toList();
+				transferOwnership(stack, new NameAndId(members.getFirst()));
+			}
+
+			kick(stack, Collections.singleton(player.nameAndId()));
+		}
 	}
 }

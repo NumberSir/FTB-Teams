@@ -1,7 +1,7 @@
 package dev.ftb.mods.ftbteams.neoforge;
 
-import dev.ftb.mods.ftblibrary.api.neoforge.FTBLibraryEvent;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
+import dev.ftb.mods.ftblibrary.api.neoforge.FTBLibraryEvent;
 import dev.ftb.mods.ftbteams.client.FTBTeamsClient;
 import dev.ftb.mods.ftbteams.net.OpenGUIMessage;
 import net.minecraft.client.Minecraft;
@@ -23,5 +23,8 @@ public class FTBTeamsNeoForgeClient {
         });
 
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, ignored -> FTBTeamsClient.keyPressed(Minecraft.getInstance()));
+        NeoForge.EVENT_BUS.addListener(FTBLibraryEvent.SidebarButtonCreated.class, event -> {
+            FTBTeamsClient.onSidebarButtonCreated(event.getEventData());
+        });
     }
 }

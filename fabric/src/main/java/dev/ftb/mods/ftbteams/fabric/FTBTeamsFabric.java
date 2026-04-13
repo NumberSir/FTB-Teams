@@ -35,6 +35,7 @@ public class FTBTeamsFabric implements ModInitializer {
 		ServerMessageEvents.ALLOW_CHAT_MESSAGE.register((message, sender, boundChatType) ->
 				!teams.redirectChatMessage(sender, message.decoratedContent()).isSuccess()
 		);
+		ServerPlayerEvents.COPY_FROM.register(FTBTeams::playerCloned);
 
 		FTBTeamsEvents.COLLECT_TEAM_PROPERTIES.register(teams::addBuiltinTeamProperties);
 

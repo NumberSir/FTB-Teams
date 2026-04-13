@@ -1,7 +1,9 @@
 package dev.ftb.mods.ftbteams;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import de.marhali.json5.Json5Object;
+import dev.ftb.mods.ftblibrary.config.manager.ConfigManager;
 import dev.ftb.mods.ftblibrary.json5.Json5Ops;
 import dev.ftb.mods.ftblibrary.nbtedit.NBTEditResponseHandlers;
 import dev.ftb.mods.ftblibrary.platform.event.NativeEventPosting;
@@ -11,9 +13,12 @@ import dev.ftb.mods.ftbteams.api.event.CollectTeamPropertiesEvent;
 import dev.ftb.mods.ftbteams.api.event.TeamManagerEvent;
 import dev.ftb.mods.ftbteams.api.property.TeamProperties;
 import dev.ftb.mods.ftbteams.command.FTBTeamsCommands;
+import dev.ftb.mods.ftbteams.config.ServerConfig;
 import dev.ftb.mods.ftbteams.data.AbstractTeam;
+import dev.ftb.mods.ftbteams.data.PartyTeam;
 import dev.ftb.mods.ftbteams.data.TeamManagerImpl;
 import dev.ftb.mods.ftbteams.net.FTBTeamsNet;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -23,6 +28,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -35,8 +41,9 @@ public class FTBTeams {
 	private static final Identifier TEAM_RESPONSE_HANDLER = FTBTeamsAPI.id("team");
 
 	public FTBTeams() {
-		FTBTeamsAPI._init(FTBTeamsAPIImpl.INSTANCE);
+		ConfigManager.getInstance().registerServerConfig(ServerConfig.CONFIG, FTBTeamsAPI.MOD_ID + ".config.server", false);
 
+		FTBTeamsAPI._init(FTBTeamsAPIImpl.INSTANCE);
 		FTBTeamsNet.register();
 	}
 
@@ -84,6 +91,7 @@ public class FTBTeams {
 		eventData.addProperty(TeamProperties.FREE_TO_JOIN);
 		eventData.addProperty(TeamProperties.MAX_MSG_HISTORY_SIZE);
 		eventData.addProperty(TeamProperties.TEAM_STAGES);
+		eventData.addProperty(TeamProperties.LIVES_REMAINING);
 	}
 
 	public void playerLoggedIn(ServerPlayer player) {
@@ -106,5 +114,39 @@ public class FTBTeams {
 			}).orElse(Outcome.PASS);
 		}
 		return Outcome.PASS;
+	}
+
+    public static void playerCloned(ServerPlayer oldPlayer, ServerPlayer newPlayer, boolean wonGame) {
+		if (!wonGame) {
+			ServerConfig.limitedLives().ifPresent(maxLives -> FTBTeamsAPI.api().getManager().getTeamForPlayer(newPlayer).ifPresent(team -> {
+				if (team instanceof PartyTeam partyTeam) {
+					MinecraftServer server = newPlayer.level().getServer();
+					// defer a tick so player is alive again and gets client team syncs
+					if (server != null) server.submit(() -> {
+						int newLives = partyTeam.getProperty(TeamProperties.LIVES_REMAINING) - 1;
+						if (newLives >= 0) {
+							partyTeam.setProperty(TeamProperties.LIVES_REMAINING, newLives);
+							partyTeam.syncOnePropertyToTeam(TeamProperties.LIVES_REMAINING, newLives);
+							partyTeam.sendMessage(Util.NIL_UUID, Component.translatable("ftbteams.lost_a_life", newLives, maxLives).withStyle(ChatFormatting.RED));
+						} else {
+							kickPlayerNoLivesLeft(newPlayer, partyTeam);
+						}
+					});
+				}
+			}));
+		}
+	}
+
+	private static void kickPlayerNoLivesLeft(ServerPlayer player, PartyTeam partyTeam) {
+		try {
+			if (partyTeam.getOnlineMembers().size() > 1) {
+				partyTeam.sendMessage(Util.NIL_UUID, Component.translatable("ftbteams.kicked_no_lives", player.getName()).withStyle(ChatFormatting.RED));
+			} else {
+				partyTeam.sendMessage(Util.NIL_UUID, Component.translatable("ftbteams.disbanded_no_lives").withStyle(ChatFormatting.RED));
+			}
+			partyTeam.kickPlayerForcibly(player);
+		} catch (CommandSyntaxException e) {
+			FTBTeams.LOGGER.error("can't kick player {} from 0-lives team {}: {}", player.getUUID(), partyTeam.getTeamId(), e.getMessage());
+		}
 	}
 }

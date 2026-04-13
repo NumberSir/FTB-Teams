@@ -19,6 +19,8 @@ public class FTBTeamsFabricClient implements ClientModInitializer {
             return false;
         });
 
+        FTBLibraryFabricEvents.SIDEBAR_BUTTON_CREATED.register(FTBTeamsClient::onSidebarButtonCreated);
+
         ClientTickEvents.END_CLIENT_TICK.register(FTBTeamsClient::keyPressed);
     }
 }

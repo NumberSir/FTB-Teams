@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [unreleased]
+
+### Added
+* Added limited party lives system, disabled by default
+  * See `limited_lives` setting in new `config/ftbteams-server.snbt` config file
+  * When members die, a party life is lost
+  * If a member dies when the party has no lives remaining, they are kicked from the party
+  * If the party owner dies, a random member is promoted to owner (officers have priority)
+  * Parties with no lives remaining cannot invite new members
+
+### Changed
+* Updated `pt_br` translation (thanks @PrincessStelllar)
+* Added `id_id` translation (thanks @evan-william)
+
 ## [2111.1.1]
 
 ### Fixed

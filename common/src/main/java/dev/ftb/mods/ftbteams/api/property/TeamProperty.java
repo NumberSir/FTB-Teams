@@ -80,8 +80,10 @@ public abstract class TeamProperty<T> {
 		return this;
 	}
 
-	/// {@return if the property should be sync'd to all players when changed; if false, then the property is sync'd
-	///  only to members of the team to which the property belongs}
+	/**
+	 * {@return if the property should be sync'd to all players when changed; if false, then the property is sync'd
+	 * only to members of the team to which the property belongs}
+	 */
 	public boolean shouldSyncToAll() {
 		return shouldSyncToAll;
 	}

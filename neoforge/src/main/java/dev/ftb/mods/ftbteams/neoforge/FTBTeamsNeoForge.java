@@ -44,6 +44,11 @@ public class FTBTeamsNeoForge {
         });
 
 		bus.addListener(FTBTeamsEvent.CollectTeamProperties.class, event -> teams.addBuiltinTeamProperties(event.getEventData()));
+		bus.addListener(PlayerEvent.Clone.class, event -> {
+			if (event.getOriginal() instanceof ServerPlayer && event.getEntity() instanceof ServerPlayer) {
+				FTBTeams.playerCloned((ServerPlayer) event.getOriginal(), (ServerPlayer) event.getEntity(), !event.isWasDeath());
+			}
+		});
 
 		registerNeoEventPosters(bus);
 	}
