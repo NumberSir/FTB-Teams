@@ -1,14 +1,14 @@
 package dev.ftb.mods.ftbteams.api.property;
 
+import de.marhali.json5.Json5Element;
+import de.marhali.json5.Json5Primitive;
 import dev.ftb.mods.ftblibrary.client.config.EditableConfigGroup;
 import dev.ftb.mods.ftblibrary.client.config.editable.EditableConfigValue;
-import net.minecraft.nbt.IntTag;
-import net.minecraft.nbt.NumericTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -77,16 +77,15 @@ public class IntProperty extends TeamProperty<Integer> {
 	}
 
 	@Override
-	public Tag toNBT(Integer value) {
-		return IntTag.valueOf(value);
+	public Json5Element toJson(Integer value) {
+		return Json5Primitive.fromNumber(value);
 	}
 
 	@Override
-	public Optional<Integer> fromNBT(Tag tag) {
-		if (tag instanceof NumericTag) {
-			return Optional.of(Mth.clamp(tag.asInt().orElse(minValue), minValue, maxValue));
-		}
+	public Optional<Integer> fromJson(@UnknownNullability Json5Element json) {
+        return json instanceof Json5Primitive p && p.isNumber() ?
+				Optional.of(Mth.clamp(p.getAsInt(), minValue, maxValue)) :
+				Optional.empty();
 
-		return Optional.empty();
-	}
+    }
 }

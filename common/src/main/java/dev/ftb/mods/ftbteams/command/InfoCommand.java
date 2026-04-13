@@ -2,10 +2,9 @@ package dev.ftb.mods.ftbteams.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import dev.ftb.mods.ftbteams.FTBTeams;
+import dev.ftb.mods.ftblibrary.platform.event.NativeEventPosting;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.Team;
-import dev.ftb.mods.ftbteams.api.event.TeamEvent;
 import dev.ftb.mods.ftbteams.api.event.TeamInfoEvent;
 import dev.ftb.mods.ftbteams.data.FTBTUtils;
 import net.minecraft.ChatFormatting;
@@ -13,6 +12,8 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static dev.ftb.mods.ftbteams.command.FTBTeamsCommands.*;
@@ -30,9 +31,11 @@ public class InfoCommand {
     }
 
     private static int info(CommandSourceStack source, Team team) {
-        team.getTeamInfo().forEach(line -> source.sendSuccess(() -> line, false));
+        List<Component> lines = new ArrayList<>(team.getTeamInfo());
 
-        TeamEvent.INFO.invoker().accept(new TeamInfoEvent(team, source));
+        NativeEventPosting.INSTANCE.postEvent(new TeamInfoEvent.Data(team, lines::add));
+
+        lines.forEach(line -> source.sendSuccess(() -> line, false));
 
         return Command.SINGLE_SUCCESS;
     }

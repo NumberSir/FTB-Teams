@@ -1,29 +1,29 @@
 package dev.ftb.mods.ftbteams.api.event;
 
-import dev.architectury.event.Event;
-import dev.architectury.event.EventFactory;
 import dev.ftb.mods.ftbteams.api.TeamManager;
-import net.minecraft.nbt.CompoundTag;
 
 import java.util.function.Consumer;
 
-public class TeamManagerEvent {
-	public static final Event<Consumer<TeamManagerEvent>> CREATED = EventFactory.createConsumerLoop(TeamManagerEvent.class);
-	public static final Event<Consumer<TeamManagerEvent>> LOADED = EventFactory.createConsumerLoop(TeamManagerEvent.class);
-	public static final Event<Consumer<TeamManagerEvent>> SAVED = EventFactory.createConsumerLoop(TeamManagerEvent.class);
-	public static final Event<Consumer<TeamManagerEvent>> DESTROYED = EventFactory.createConsumerLoop(TeamManagerEvent.class);
-
-	private final TeamManager manager;
-
-	public TeamManagerEvent(TeamManager t) {
-		manager = t;
+/// This lifecycle event is fired server-side when the team manager state changes in some way.
+///
+///  Corresponding platform-native events to listen to:
+/// * `FTBTeamsEvent.TeamManager` (NeoForge)
+/// * `FTBTeamsEvents.TEAM_MANAGER` (Fabric)
+@FunctionalInterface
+public interface TeamManagerEvent extends Consumer<TeamManagerEvent.Data> {
+	/// @param manager the team manager
+	/// @param action the action that has just occurred to the team manager
+	record Data(TeamManager manager, Action action) {
 	}
 
-	public TeamManager getManager() {
-		return manager;
-	}
-
-	public CompoundTag getExtraData() {
-		return manager.getExtraData();
+	enum Action {
+		/// Team manager has been created (on server startup)
+		CREATED,
+		/// Team manager data has been loaded from disk (see also [TeamLoadedEvent] for individual teams)
+		LOADED,
+		/// Team manager data has been saved to disk
+		SAVED,
+		/// Team manager has been destroyed (on server shutdown)
+		DESTROYED
 	}
 }

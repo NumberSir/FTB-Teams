@@ -1,15 +1,16 @@
 package dev.ftb.mods.ftbteams.api.property;
 
+import de.marhali.json5.Json5Element;
+import de.marhali.json5.Json5Primitive;
 import dev.ftb.mods.ftblibrary.client.config.EditableConfigGroup;
 import dev.ftb.mods.ftblibrary.client.config.editable.EditableConfigValue;
 import dev.ftb.mods.ftblibrary.util.NameMap;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.HashMap;
 import java.util.List;
@@ -76,16 +77,13 @@ public class EnumProperty extends TeamProperty<String> {
 	}
 
 	@Override
-	public Tag toNBT(String value) {
-		return StringTag.valueOf(value);
+	public Json5Element toJson(String value) {
+		return Json5Primitive.fromString(value);
 	}
 
 	@Override
-	public Optional<String> fromNBT(Tag tag) {
-		if (tag instanceof StringTag) {
-			return tag.asString();
-		}
+	public Optional<String> fromJson(@UnknownNullability Json5Element json) {
+        return json instanceof Json5Primitive p ? Optional.of(p.getAsString()) : Optional.empty();
 
-		return Optional.empty();
-	}
+    }
 }

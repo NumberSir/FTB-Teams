@@ -20,12 +20,10 @@ import org.jspecify.annotations.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 
-/**
- * Represents the teams and known players that the client knows about; one global instance exists on the client.
- * Instances are also created server-side for when changes need to be sync'd to the client; the server side instance
- * will usually not have a complete list of client teams, but just those that needed to be added/updated/removed
- * on the client.
- */
+/// Represents the teams and known players that the client knows about; one global instance exists on the client.
+/// Instances are also created server-side for when changes need to be sync'd to the client; the server side instance
+/// will usually not have a complete list of client teams, but just those that needed to be added/updated/removed
+/// on the client.
 public class ClientTeamManagerImpl implements ClientTeamManager {
 	private static final ClientTeamManagerImpl NONE = new ClientTeamManagerImpl(Util.NIL_UUID);
 	private static ClientTeamManagerImpl instance = NONE;  // instantiated whenever the client receives a full team sync from server
@@ -74,13 +72,11 @@ public class ClientTeamManagerImpl implements ClientTeamManager {
 		return this;
 	}
 
-	/**
-	 * Called server-side to create a team manager for syncing one or more teams to clients.
-	 *
-	 * @param manager the server-side team manager
-	 * @param teams the teams to be sync'd, which may not necessarily exist on the server anymore
-	 * @return the client manager, ready to be sync'd
-	 */
+	/// Called server-side to create a team manager for syncing one or more teams to clients.
+	///
+	/// @param manager the server-side team manager
+	/// @param teams the teams to be sync'd, which may not necessarily exist on the server anymore
+	/// @return the client manager, ready to be sync'd
 	public static ClientTeamManagerImpl forSyncing(TeamManagerImpl manager, Collection<? extends Team> teams) {
 		ClientTeamManagerImpl clientManager = new ClientTeamManagerImpl(manager.getId());
 
@@ -225,6 +221,6 @@ public class ClientTeamManagerImpl implements ClientTeamManager {
 	}
 
 	private KnownClientPlayer updateFrom(UUID id, KnownClientPlayer other) {
-		return new KnownClientPlayer(other.online(), other.teamId(), new GameProfile(id, other.name()), other.extraData());
+		return new KnownClientPlayer(other.online(), other.teamId(), new GameProfile(id, other.name()));
 	}
 }

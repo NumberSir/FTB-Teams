@@ -1,7 +1,6 @@
 package dev.ftb.mods.ftbteams.client.gui;
 
 import com.mojang.authlib.GameProfile;
-import dev.architectury.networking.NetworkManager;
 import dev.ftb.mods.ftblibrary.client.gui.GuiHelper;
 import dev.ftb.mods.ftblibrary.client.gui.input.Key;
 import dev.ftb.mods.ftblibrary.client.gui.input.MouseButton;
@@ -13,6 +12,7 @@ import dev.ftb.mods.ftblibrary.client.icon.IconHelper;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftblibrary.icon.FaceIcon;
 import dev.ftb.mods.ftblibrary.icon.Icons;
+import dev.ftb.mods.ftblibrary.platform.network.Play2ServerNetworking;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.client.ClientTeamManager;
 import dev.ftb.mods.ftbteams.api.property.TeamProperties;
@@ -21,7 +21,7 @@ import dev.ftb.mods.ftbteams.net.CreatePartyMessage;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.User;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
@@ -56,7 +56,7 @@ public class CreatePartyScreen extends BaseScreen implements NordColors, Invitat
 			@Override
 			public void onClicked(MouseButton mouseButton) {
 				closeGui(false);
-				NetworkManager.sendToServer(new CreatePartyMessage(settingsPanel.nameTextBox.getText(), settingsPanel.descriptionTextBox.getText(), teamColor.rgb(), invitedMembers));
+				Play2ServerNetworking.send(new CreatePartyMessage(settingsPanel.nameTextBox.getText(), settingsPanel.descriptionTextBox.getText(), teamColor.rgb(), invitedMembers));
 			}
 		};
 	}
@@ -66,7 +66,7 @@ public class CreatePartyScreen extends BaseScreen implements NordColors, Invitat
 		Button closeButton;
 		add(closeButton = new SimpleButton(this, Component.translatable("gui.cancel"), Icons.CANCEL.withTint(SNOW_STORM_2), (b, mb) -> closeGui()) {
 			@Override
-			public void draw(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+			public void draw(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
 				drawIcon(graphics, theme, x, y, w, h);
 			}
 		});
@@ -77,7 +77,7 @@ public class CreatePartyScreen extends BaseScreen implements NordColors, Invitat
 			b.setIcon(teamColor.withBorder(POLAR_NIGHT_0, false));
 		}) {
 			@Override
-			public void draw(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+			public void draw(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
 				drawIcon(graphics, theme, x, y, w, h);
 			}
 		});
@@ -92,7 +92,7 @@ public class CreatePartyScreen extends BaseScreen implements NordColors, Invitat
 	}
 
 	@Override
-	public void drawBackground(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+	public void drawBackground(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
 		GuiHelper.drawHollowRect(graphics, x, y, w, h, POLAR_NIGHT_0, true);
 		IconHelper.renderIcon(POLAR_NIGHT_1, graphics, x + 1, y + 1, w - 2, h - 2);
 		IconHelper.renderIcon(POLAR_NIGHT_0, graphics, x + 1, y + 21, w - 2, 1);
@@ -100,7 +100,7 @@ public class CreatePartyScreen extends BaseScreen implements NordColors, Invitat
 	}
 
 	@Override
-	public void drawForeground(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+	public void drawForeground(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
 		super.drawForeground(graphics, theme, x, y, w, h);
 		theme.drawString(graphics, Component.translatable("ftbteams.create_party"), x + w / 2, y + 7, SNOW_STORM_1, Theme.CENTERED);
 	}
@@ -178,13 +178,13 @@ public class CreatePartyScreen extends BaseScreen implements NordColors, Invitat
 
 			nameTextBox = new TextBox(this) {
 				@Override
-				public void drawTextBox(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+				public void drawTextBox(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
 					IconHelper.renderIcon(NordColors.POLAR_NIGHT_0, graphics, x, y, w, h);
 				}
 			};
 			descriptionTextBox = new TextBox(this) {
 				@Override
-				public void drawTextBox(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+				public void drawTextBox(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
 					IconHelper.renderIcon(NordColors.POLAR_NIGHT_0, graphics, x, y, w, h);
 				}
 			};
@@ -219,7 +219,7 @@ public class CreatePartyScreen extends BaseScreen implements NordColors, Invitat
 		}
 
 		@Override
-		public void drawBackground(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+		public void drawBackground(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
 			IconHelper.renderIcon(NordColors.POLAR_NIGHT_2, graphics, x, y, w, h);
 		}
 	}

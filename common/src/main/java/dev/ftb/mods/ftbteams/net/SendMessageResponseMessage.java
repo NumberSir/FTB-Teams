@@ -1,6 +1,6 @@
 package dev.ftb.mods.ftbteams.net;
 
-import dev.architectury.networking.NetworkManager;
+import dev.ftb.mods.ftblibrary.platform.network.PacketContext;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.client.FTBTeamsClient;
 import net.minecraft.core.UUIDUtil;
@@ -21,7 +21,7 @@ public record SendMessageResponseMessage(UUID senderId, Component text) implemen
 			SendMessageResponseMessage::new
 	);
 
-	public static void handle(SendMessageResponseMessage message, NetworkManager.PacketContext context) {
+	public static void handle(SendMessageResponseMessage message, PacketContext ignored) {
 		FTBTeamsClient.sendMessage(message.senderId, message.text);
 	}
 

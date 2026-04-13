@@ -3,23 +3,17 @@ package dev.ftb.mods.ftbteams.api.event;
 import dev.ftb.mods.ftbteams.api.Team;
 import dev.ftb.mods.ftbteams.api.property.TeamPropertyCollection;
 
-public class TeamPropertiesChangedEvent extends TeamEvent {
-	private final TeamPropertyCollection prevProps;
+import java.util.function.Consumer;
 
-	public TeamPropertiesChangedEvent(Team team, TeamPropertyCollection prevProps) {
-		super(team);
-
-		this.prevProps = prevProps;
-	}
-
-	/**
-	 * Get the previous properties for the team.
-	 *
-	 * @apiNote the new properties can be retrieved simply by calling {@code event.getTeam().getProperties()}
-	 *
-	 * @return the previous properties
-	 */
-	public TeamPropertyCollection getPreviousProperties() {
-		return prevProps;
+/// Fired on both client and server when a team's properties have changed in some way.
+/// * On client, fired when the client receives an updated notification from the server for the team
+/// * On server, fired when a team's properties are changed, either via GUI or command
+///
+///  Corresponding platform-native events to listen to:
+/// * `FTBTeamsEvent.TeamPropertiesChanged` (NeoForge)
+/// * `FTBTeamsEvents.TEAM_PROPERTIES_CHANGED` (Fabric)
+@FunctionalInterface
+public interface TeamPropertiesChangedEvent extends Consumer<TeamPropertiesChangedEvent.Data> {
+	record Data(Team team, TeamPropertyCollection previousProperties, boolean isClient) {
 	}
 }

@@ -13,7 +13,7 @@ import dev.ftb.mods.ftblibrary.icon.Icons;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.client.KnownClientPlayer;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 
@@ -41,7 +41,7 @@ public abstract class BaseInvitationScreen extends BaseScreen implements Invitat
 
         closeButton = new SimpleButton(this, Component.translatable("gui.cancel"), Icons.CANCEL.withTint(SNOW_STORM_2), (simpleButton, mouseButton) -> closeGui()) {
             @Override
-            public void draw(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+            public void draw(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
                 drawIcon(graphics, theme, x, y, w, h);
             }
         };
@@ -61,7 +61,7 @@ public abstract class BaseInvitationScreen extends BaseScreen implements Invitat
     }
 
     @Override
-    public void drawBackground(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+    public void drawBackground(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
         GuiHelper.drawHollowRect(graphics, x, y, w, h, POLAR_NIGHT_0, true);
         IconHelper.renderIcon(POLAR_NIGHT_0, graphics, x + 1, y + 1, w - 2, h - 2);
         IconHelper.renderIcon(POLAR_NIGHT_1, graphics, x + playerPanel.posX, y + playerPanel.posY, playerPanel.width, playerPanel.height);
@@ -69,7 +69,7 @@ public abstract class BaseInvitationScreen extends BaseScreen implements Invitat
     }
 
     @Override
-    public void drawForeground(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+    public void drawForeground(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
         theme.drawString(graphics, title, x + w / 2, y + 5, SNOW_STORM_1, Theme.CENTERED);
     }
 
@@ -122,7 +122,7 @@ public abstract class BaseInvitationScreen extends BaseScreen implements Invitat
         }
 
         @Override
-        public void drawBackground(GuiGraphics graphics, Theme theme, int x, int y, int w, int h) {
+        public void drawBackground(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
             IconHelper.renderIcon(NordColors.POLAR_NIGHT_2, graphics, x, y, w, h);
         }
     }

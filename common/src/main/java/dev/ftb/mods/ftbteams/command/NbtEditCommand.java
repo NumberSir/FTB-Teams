@@ -4,17 +4,19 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import de.marhali.json5.Json5Object;
 import dev.ftb.mods.ftblibrary.FTBLibraryCommands;
+import dev.ftb.mods.ftblibrary.json5.Json5Ops;
 import dev.ftb.mods.ftblibrary.net.EditNBTPacket;
-import dev.ftb.mods.ftblibrary.util.NetworkHelper;
+import dev.ftb.mods.ftblibrary.platform.network.Server2PlayNetworking;
 import dev.ftb.mods.ftbteams.api.Team;
 import dev.ftb.mods.ftbteams.data.AbstractTeam;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Util;
 
@@ -41,7 +43,7 @@ public class NbtEditCommand {
     private static int edit(CommandContext<CommandSourceStack> ctx, ServerPlayer editor, Team team) {
         if (team instanceof AbstractTeam abstractTeam) {
             CompoundTag info = Util.make(new CompoundTag(), t -> {
-                t.store("title", ComponentSerialization.CODEC, abstractTeam.getColoredName());
+                t.putString("title", abstractTeam.getShortName());
                 t.putString("type", "ftbteams:team");
                 t.store("id", UUIDUtil.CODEC, team.getTeamId());
                 t.putString("team_type", abstractTeam.getType().getSerializedName());
@@ -52,8 +54,10 @@ public class NbtEditCommand {
                         .build()
                 );
             });
-            CompoundTag tag = abstractTeam.serializeNBT(ctx.getSource().getServer().registryAccess());
-            NetworkHelper.sendTo(editor, new EditNBTPacket(info, tag));
+            Json5Object json = abstractTeam.toJson(ctx.getSource().getServer().registryAccess());
+            if (Json5Ops.INSTANCE.convertTo(NbtOps.INSTANCE, json) instanceof CompoundTag tag) {
+                Server2PlayNetworking.send(editor, new EditNBTPacket(info, tag));
+            }
             return Command.SINGLE_SUCCESS;
         }
         return 0;

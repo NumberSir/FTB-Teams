@@ -1,28 +1,29 @@
 package dev.ftb.mods.ftbteams.data;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import de.marhali.json5.Json5Array;
+import de.marhali.json5.Json5Element;
+import de.marhali.json5.Json5Object;
+import de.marhali.json5.Json5Primitive;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
-import dev.ftb.mods.ftblibrary.snbt.SNBT;
-import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
-import dev.ftb.mods.ftblibrary.util.NetworkHelper;
+import dev.ftb.mods.ftblibrary.json5.Json5Util;
+import dev.ftb.mods.ftblibrary.platform.event.NativeEventPosting;
+import dev.ftb.mods.ftblibrary.platform.network.Server2PlayNetworking;
 import dev.ftb.mods.ftbteams.FTBTeams;
 import dev.ftb.mods.ftbteams.api.Team;
 import dev.ftb.mods.ftbteams.api.TeamManager;
 import dev.ftb.mods.ftbteams.api.TeamRank;
-import dev.ftb.mods.ftbteams.api.event.PlayerLoggedInAfterTeamEvent;
-import dev.ftb.mods.ftbteams.api.event.TeamEvent;
 import dev.ftb.mods.ftbteams.api.event.TeamManagerEvent;
+import dev.ftb.mods.ftbteams.api.event.TeamPlayerLoggedInEvent;
 import dev.ftb.mods.ftbteams.api.property.TeamProperties;
 import dev.ftb.mods.ftbteams.command.TeamArgument;
+import dev.ftb.mods.ftbteams.config.ServerConfig;
 import dev.ftb.mods.ftbteams.net.SyncMessageHistoryMessage;
 import dev.ftb.mods.ftbteams.net.SyncTeamsMessage;
 import dev.ftb.mods.ftbteams.net.ToggleChatResponseMessage;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -51,14 +52,12 @@ public class TeamManagerImpl implements TeamManager {
 	private final Set<UUID> chatRedirected;
 	@Nullable
 	Map<String, Team> nameMap;
-	private CompoundTag extraData;
 
 	public TeamManagerImpl(MinecraftServer server) {
 		this.server = server;
 
 		knownPlayers = new LinkedHashMap<>();
 		teamMap = new LinkedHashMap<>();
-		extraData = new CompoundTag();
 		chatRedirected = new HashSet<>();
 	}
 
@@ -139,45 +138,57 @@ public class TeamManagerImpl implements TeamManager {
 				.orElse(false);
 	}
 
+	private Path managerFile() {
+		return server.getWorldPath(FOLDER_NAME).resolve("ftbteams" + Json5Util.FILE_EXT);
+	}
+
 	public void load() throws IOException {
 		id = null;
-		Path directory = server.getWorldPath(FOLDER_NAME);
 
-		if (Files.notExists(directory) || !Files.isDirectory(directory)) {
-			return;
+		Path managerFile = managerFile();
+		Path directory = managerFile.getParent();
+
+		Files.createDirectories(managerFile.getParent());
+
+		if (!Files.exists(managerFile)) {
+			markDirty();
+			saveNow();
+			FTBTeams.LOGGER.info("Created initial manager file {}", managerFile);
 		}
+		Json5Object dataFileJson = Json5Util.tryRead(managerFile);
 
-		CompoundTag dataFileTag = SNBT.tryRead(directory.resolve("ftbteams.snbt"));
-		//noinspection DataFlowIssue this won't crash... nbt isn't actually null
-        var compoundUuid = dataFileTag.read("id", UUIDUtil.CODEC);
-        compoundUuid.ifPresent(uuid -> id = uuid);
-
-		extraData = dataFileTag.getCompoundOrEmpty("extra");
-		TeamManagerEvent.LOADED.invoker().accept(new TeamManagerEvent(this));
+		id = Json5Util.fetch(dataFileJson, "id", UUIDUtil.STRING_CODEC).orElseThrow();
 
 		chatRedirected.clear();
-		dataFileTag.getListOrEmpty("chat_redirected").forEach(tag -> {
-			try {
-				chatRedirected.add(UUID.fromString(tag.toString()));
-			} catch (IllegalArgumentException e) {
-				FTBTeams.LOGGER.error("invalid uuid {} in 'chat_redirection', ignoring", tag.toString());
-			}
-		});
+		Json5Util.getJson5Array(dataFileJson, "chat_redirected").ifPresent(a -> a.forEach(el -> {
+            try {
+                chatRedirected.add(UUID.fromString(el.getAsString()));
+            } catch (IllegalArgumentException e) {
+                FTBTeams.LOGGER.error("invalid uuid {} in 'chat_redirection', ignoring", el.getAsString());
+            }
+        }));
 
+		NativeEventPosting.INSTANCE.postEvent(new TeamManagerEvent.Data(this, TeamManagerEvent.Action.LOADED));
+
+		loadAllTeams(directory);
+
+		FTBTeams.LOGGER.info("loaded team data: {} known players, {} teams total", knownPlayers.size(), teamMap.size());
+	}
+
+	private void loadAllTeams(Path directory) {
 		for (TeamType type : TeamType.values()) {
 			Path dir = directory.resolve(type.getSerializedName());
 
 			if (Files.exists(dir) && Files.isDirectory(dir)) {
 				try (Stream<Path> s = Files.list(dir)) {
-					s.filter(path -> path.getFileName().toString().endsWith(".snbt")).forEach(file -> {
+					s.filter(path -> path.getFileName().toString().endsWith(Json5Util.FILE_EXT)).forEach(file -> {
                         try {
-                            CompoundTag nbt = SNBT.tryRead(file);
-							//noinspection DataFlowIssue this won't crash... nbt isn't actually null
-                            AbstractTeam team = type.createTeam(this, nbt.read("id", UUIDUtil.CODEC).orElseThrow());
+                            Json5Object teamJson = Json5Util.tryRead(file);
+                            AbstractTeam team = type.createTeam(this, Json5Util.fetch(teamJson, "id", UUIDUtil.STRING_CODEC).orElseThrow());
 							teamMap.put(team.id, team);
-							team.deserializeNBT(nbt, server.registryAccess());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
+							team.deserializeJson(teamJson, server.registryAccess());
+                        } catch (IOException ex) {
+							FTBTeams.LOGGER.error("can't read team file {}: {}", file, ex.getMessage());
                         }
 					});
 				} catch (Exception ex) {
@@ -202,8 +213,6 @@ public class TeamManagerImpl implements TeamManager {
 				}
 			}
 		}
-
-		FTBTeams.LOGGER.info("loaded team data: {} known players, {} teams total", knownPlayers.size(), teamMap.size());
 	}
 
 	public void markDirty() {
@@ -222,11 +231,12 @@ public class TeamManagerImpl implements TeamManager {
 		}
 
 		if (shouldSave) {
-			TeamManagerEvent.SAVED.invoker().accept(new TeamManagerEvent(this));
-            try {
-                SNBT.tryWrite(directory.resolve("ftbteams.snbt"), serializeNBT());
+			NativeEventPosting.INSTANCE.postEvent(new TeamManagerEvent.Data(this, TeamManagerEvent.Action.SAVED));
+			Path path = managerFile();
+			try {
+				Json5Util.tryWrite(path, (Json5Element) toJson());
             } catch (IOException e) {
-                FTBTeams.LOGGER.error("can't save ftbteams.snbt: {}", e.getMessage());
+                FTBTeams.LOGGER.error("can't save {}: {}", path, e.getMessage());
             }
             shouldSave = false;
 		}
@@ -244,12 +254,13 @@ public class TeamManagerImpl implements TeamManager {
 		}
 	}
 
-	public SNBTCompoundTag serializeNBT() {
-		SNBTCompoundTag nbt = new SNBTCompoundTag();
-		nbt.store("id", UUIDUtil.CODEC, getId());
-		nbt.put("extra", extraData);
-		nbt.put("chat_redirected", Util.make(new ListTag(), l -> chatRedirected.forEach(id -> l.add(StringTag.valueOf(id.toString())))));
-		return nbt;
+	public Json5Object toJson() {
+		Json5Object json = new Json5Object();
+		Json5Util.store(json, "id", UUIDUtil.STRING_CODEC, getId());
+		json.add("chat_redirected", Util.make(new Json5Array(), l ->
+				chatRedirected.forEach(id -> l.add(Json5Primitive.fromString(id.toString()))))
+		);
+		return json;
 	}
 
 	private PartyTeam createPartyTeamInternal(UUID playerId, @Nullable ServerPlayer player, String name) {
@@ -318,7 +329,7 @@ public class TeamManagerImpl implements TeamManager {
 
 		if (player != null) {
 			FTBTeams.LOGGER.debug("sending team login event for {}...", player.getUUID());
-			TeamEvent.PLAYER_LOGGED_IN.invoker().accept(new PlayerLoggedInAfterTeamEvent(team.getEffectiveTeam(), player));
+			NativeEventPosting.INSTANCE.postEvent(new TeamPlayerLoggedInEvent.Data(team.getEffectiveTeam(), player));
 			FTBTeams.LOGGER.debug("team login event for {} sent", player.getUUID());
 		}
 	}
@@ -332,28 +343,24 @@ public class TeamManagerImpl implements TeamManager {
 		}
 	}
 
-	/**
-	 * Sync team information about all teams to one player, along with that player's team's message history.
-	 * Called on player login.
-	 *
-	 * @param player player to sync to
-	 * @param selfTeam the player's own team, which could be a party team
-	 */
+	/// Sync team information about all teams to one player, along with that player's team's message history.
+	/// Called on player login.
+	///
+	/// @param player player to sync to
+	/// @param selfTeam the player's own team, which could be a party team
 	public void syncAllToPlayer(ServerPlayer player, AbstractTeam selfTeam) {
 		ClientTeamManagerImpl manager = ClientTeamManagerImpl.forSyncing(this, teamMap.values());
 
-		NetworkHelper.sendTo(player, new SyncTeamsMessage(manager.setSelfTeamId(selfTeam.id), selfTeam.getTeamId(), true));
-		NetworkHelper.sendTo(player, SyncMessageHistoryMessage.forTeam(selfTeam));
-		NetworkHelper.sendTo(player, new ToggleChatResponseMessage(isChatRedirected(player)));
+		Server2PlayNetworking.send(player, new SyncTeamsMessage(manager.setSelfTeamId(selfTeam.id), selfTeam.getTeamId(), true));
+		Server2PlayNetworking.send(player, SyncMessageHistoryMessage.forTeam(selfTeam));
+		Server2PlayNetworking.send(player, new ToggleChatResponseMessage(isChatRedirected(player)));
 		server.getPlayerList().sendPlayerPermissionLevel(player);
 	}
 
-	/**
-	 * Sync only the given team(s) to all players. Called when one or more teams are modified in any way. In practice,
-	 * this will always be one or two teams (two when a player is joining or leaving a team).
-	 *
-	 * @param teams the teams to sync, which may have been deleted already
-	 */
+	/// Sync only the given team(s) to all players. Called when one or more teams are modified in any way. In practice,
+	/// this will always be one or two teams (two when a player is joining or leaving a team).
+	///
+	/// @param teams the teams to sync, which may have been deleted already
 	public void syncToAll(Team... teams) {
 		if (teams.length == 0) return;
 
@@ -361,9 +368,9 @@ public class TeamManagerImpl implements TeamManager {
 
 		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 			getTeamForPlayer(player).ifPresent(selfTeam -> {
-				NetworkHelper.sendTo(player, new SyncTeamsMessage(manager.setSelfTeamId(selfTeam.getTeamId()), selfTeam.getTeamId(), false));
+				Server2PlayNetworking.send(player, new SyncTeamsMessage(manager.setSelfTeamId(selfTeam.getTeamId()), selfTeam.getTeamId(), false));
 				if (teams.length > 1) {
-					NetworkHelper.sendTo(player, SyncMessageHistoryMessage.forTeam(selfTeam));
+					Server2PlayNetworking.send(player, SyncMessageHistoryMessage.forTeam(selfTeam));
 				}
 			});
 		}
@@ -403,7 +410,7 @@ public class TeamManagerImpl implements TeamManager {
 	@Override
 	public void setChatRedirected(ServerPlayer player, boolean redirect) {
 		if (redirect && chatRedirected.add(player.getUUID()) || !redirect && chatRedirected.remove(player.getUUID())) {
-			NetworkHelper.sendTo(player, new ToggleChatResponseMessage(redirect));
+			Server2PlayNetworking.send(player, new ToggleChatResponseMessage(redirect));
 			shouldSave = true;
 		}
 	}
@@ -433,7 +440,7 @@ public class TeamManagerImpl implements TeamManager {
 		PartyTeam team = createPartyTeamInternal(playerId, player, name);
 		if (description != null) team.setProperty(TeamProperties.DESCRIPTION, description);
 		if (color != null) team.setProperty(TeamProperties.COLOR, color);
-		team.copyExtraData(playerTeam);
+//		team.copyExtraData(playerTeam);
 
 		playerTeam.setEffectiveTeam(team);
 
@@ -442,9 +449,13 @@ public class TeamManagerImpl implements TeamManager {
 		team.sendMessage(Util.NIL_UUID, Component.translatable("ftbteams.message.joined", playerName).withStyle(ChatFormatting.YELLOW));
 		team.markDirty();
 
+		ServerConfig.limitedLives().ifPresent(lives -> {
+			team.setProperty(TeamProperties.LIVES_REMAINING, ServerConfig.LIMITED_LIVES.get());
+			team.sendMessage(Util.NIL_UUID, Component.translatable("ftbteams.message.limited_lives", lives, lives).withStyle(ChatFormatting.GOLD));
+		});
+
 		playerTeam.removeMember(playerId);
 		playerTeam.markDirty();
-
 		playerTeam.updatePresence();
 		syncToAll(team, playerTeam);
 		team.onPlayerChangeTeam(playerTeam, playerId, player, false);
@@ -460,16 +471,11 @@ public class TeamManagerImpl implements TeamManager {
 		return Component.literal(team == null ? "Unknown" : team.getPlayerName()).withStyle(ChatFormatting.YELLOW);
 	}
 
-	@Override
-	public CompoundTag getExtraData() {
-		return extraData;
-	}
-
 	void deleteTeam(AbstractTeam team) {
 		teamMap.remove(team.getId());
 		markDirty();
 		saveNow();
-		tryDeleteTeamFile(team.getId() + ".snbt", team.getType().getSerializedName());
+		tryDeleteTeamFile(team.getId() + Json5Util.FILE_EXT, team.getType().getSerializedName());
 	}
 
 	private void tryDeleteTeamFile(String teamFileName, String subfolderName) {

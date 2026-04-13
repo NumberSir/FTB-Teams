@@ -2,7 +2,7 @@ package dev.ftb.mods.ftbteams.net;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import dev.architectury.networking.NetworkManager;
+import dev.ftb.mods.ftblibrary.platform.network.PacketContext;
 import dev.ftb.mods.ftbteams.FTBTeamsAPIImpl;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.data.PlayerTeam;
@@ -28,20 +28,18 @@ public record CreatePartyMessage(String name, String description, int color, Set
 			CreatePartyMessage::new
 	);
 
-	public static void handle(CreatePartyMessage message, NetworkManager.PacketContext context) {
-		context.queue(() -> {
-			ServerPlayer player = (ServerPlayer) context.getPlayer();
-			FTBTeamsAPI.api().getManager().getTeamForPlayer(player).ifPresent(team -> {
-				if (FTBTeamsAPIImpl.INSTANCE.isPartyCreationFromAPIOnly()) {
-					player.displayClientMessage(Component.translatable("ftbteams.party_api_only").withStyle(ChatFormatting.RED), false);
-				} else if (team instanceof PlayerTeam playerTeam) {
-                    try {
-                        playerTeam.createParty(player.getUUID(), player, message.name, message.description, message.color, message.invited);
-                    } catch (CommandSyntaxException e) {
-                        player.displayClientMessage(Component.translatable("ftbteams.party_creation_failed", e.getMessage()), false);
-                    }
-                }
-			});
+	public static void handle(CreatePartyMessage message, PacketContext context) {
+		ServerPlayer player = (ServerPlayer) context.player();
+		FTBTeamsAPI.api().getManager().getTeamForPlayer(player).ifPresent(team -> {
+			if (FTBTeamsAPIImpl.INSTANCE.isPartyCreationFromAPIOnly()) {
+				player.sendSystemMessage(Component.translatable("ftbteams.party_api_only").withStyle(ChatFormatting.RED));
+			} else if (team instanceof PlayerTeam playerTeam) {
+				try {
+					playerTeam.createParty(player.getUUID(), player, message.name, message.description, message.color, message.invited);
+				} catch (CommandSyntaxException e) {
+					player.sendSystemMessage(Component.translatable("ftbteams.party_creation_failed", e.getMessage()));
+				}
+			}
 		});
 	}
 

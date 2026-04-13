@@ -1,10 +1,9 @@
 package dev.ftb.mods.ftbteams.api.property;
 
+import de.marhali.json5.Json5Element;
+import de.marhali.json5.Json5Primitive;
 import dev.ftb.mods.ftblibrary.client.config.EditableConfigGroup;
 import dev.ftb.mods.ftblibrary.client.config.editable.EditableConfigValue;
-import net.minecraft.nbt.ByteTag;
-import net.minecraft.nbt.NumericTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.Identifier;
@@ -57,19 +56,13 @@ public class BooleanProperty extends TeamProperty<Boolean> {
 	}
 
 	@Override
-	public Tag toNBT(Boolean value) {
-		return ByteTag.valueOf(value);
+	public Json5Element toJson(Boolean value) {
+		return Json5Primitive.fromBoolean(value);
 	}
 
 	@Override
-	public Optional<Boolean> fromNBT(Tag tag) {
-        if (tag instanceof NumericTag) {
-            if (tag.asByte().orElse((byte) 0) == 1) {
-                return TRUE;
-            }
-        }
-
-        return FALSE;
+	public Optional<Boolean> fromJson(Json5Element json) {
+        return json instanceof Json5Primitive p && p.isNumber() && p.getAsByte() == 1 ? TRUE : FALSE;
     }
 
 	@Override

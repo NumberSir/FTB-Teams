@@ -9,7 +9,6 @@ import dev.ftb.mods.ftbteams.api.TeamRank;
 import dev.ftb.mods.ftbteams.api.property.TeamProperties;
 import dev.ftb.mods.ftbteams.api.property.TeamProperty;
 import dev.ftb.mods.ftbteams.api.property.TeamPropertyCollection;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
@@ -20,14 +19,11 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
-/**
- * Base class for all teams, client and server side
- */
+/// Base class for all teams, client and server side
 public abstract class AbstractTeamBase implements Team {
 	protected final UUID id;
 	protected final TeamPropertyCollectionImpl properties;
 	protected final Map<UUID, TeamRank> ranks;
-	protected CompoundTag extraData;
 	protected final List<TeamMessage> messageHistory;
 	private boolean valid;
 
@@ -39,7 +35,6 @@ public abstract class AbstractTeamBase implements Team {
 		this.id = id;
 		this.properties = properties instanceof TeamPropertyCollectionImpl p ? p : new TeamPropertyCollectionImpl();
 		ranks = new HashMap<>();
-		extraData = new CompoundTag();
 		messageHistory = new LinkedList<>();
 		valid = true;
 	}
@@ -80,11 +75,6 @@ public abstract class AbstractTeamBase implements Team {
 	@Override
 	public String toString() {
 		return getShortName();
-	}
-
-	@Override
-	public CompoundTag getExtraData() {
-		return extraData;
 	}
 
 	@Override

@@ -2,9 +2,12 @@ package dev.ftb.mods.ftbteams.data;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import dev.ftb.mods.ftblibrary.snbt.SNBT;
-import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
-import dev.ftb.mods.ftblibrary.util.NetworkHelper;
+import de.marhali.json5.Json5Element;
+import de.marhali.json5.Json5Object;
+import dev.ftb.mods.ftblibrary.json5.Json5Ops;
+import dev.ftb.mods.ftblibrary.json5.Json5Util;
+import dev.ftb.mods.ftblibrary.platform.event.NativeEventPosting;
+import dev.ftb.mods.ftblibrary.platform.network.Server2PlayNetworking;
 import dev.ftb.mods.ftblibrary.util.TextComponentUtils;
 import dev.ftb.mods.ftbteams.FTBTeams;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
@@ -19,7 +22,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
@@ -27,15 +29,14 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Util;
+import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 
-/**
- * Base class for server-side teams
- */
+/// Base class for server-side teams
 public abstract class AbstractTeam extends AbstractTeamBase {
 	protected final TeamManagerImpl manager;
 	private boolean shouldSave;
@@ -73,7 +74,7 @@ public abstract class AbstractTeam extends AbstractTeamBase {
 
 	void onCreated(@Nullable ServerPlayer player, UUID playerId) {
 		if (player != null) {
-			TeamEvent.CREATED.invoker().accept(new TeamCreatedEvent(this, player, playerId));
+			NativeEventPosting.INSTANCE.postEvent(new TeamCreatedEvent.Data(this, player, playerId));
 		}
 		markDirty();
 		manager.markDirty();
@@ -84,66 +85,61 @@ public abstract class AbstractTeam extends AbstractTeamBase {
 		player.level().getServer().getPlayerList().sendPlayerPermissionLevel(player);
 	}
 
-	void onPlayerChangeTeam(@Nullable Team prev, UUID player, @Nullable ServerPlayer p, boolean deleted) {
-		TeamEvent.PLAYER_CHANGED.invoker().accept(new PlayerChangedTeamEvent(this, prev, player, p));
+	void onPlayerChangeTeam(@Nullable Team prev, UUID player, @Nullable ServerPlayer serverPlayer, boolean deleted) {
+		NativeEventPosting.INSTANCE.postEvent(new PlayerChangedTeamEvent.Data(this, prev, player, serverPlayer));
 
 		if (prev instanceof PartyTeam && this instanceof PlayerTeam) {
-			TeamEvent.PLAYER_LEFT_PARTY.invoker().accept(new PlayerLeftPartyTeamEvent(prev, this, player, p, deleted));
-		} else if (prev instanceof PlayerTeam && p != null) {
-			TeamEvent.PLAYER_JOINED_PARTY.invoker().accept(new PlayerJoinedPartyTeamEvent(this, prev, p));
+			NativeEventPosting.INSTANCE.postEvent(new PlayerLeftPartyTeamEvent.Data(prev, this, player, serverPlayer, deleted));
+		} else if (prev instanceof PlayerTeam && serverPlayer != null) {
+			NativeEventPosting.INSTANCE.postEvent(new PlayerJoinedPartyTeamEvent.Data(this, prev, serverPlayer));
 		}
 
 		if (deleted && prev != null) {
-			TeamEvent.DELETED.invoker().accept(new TeamEvent(prev));
+			NativeEventPosting.INSTANCE.postEvent(new TeamDeletedEvent.Data(prev));
 		}
 
-		if (p != null) {
-			updateCommands(p);
+		if (serverPlayer != null) {
+			updateCommands(serverPlayer);
 		}
 	}
 
 	// Data IO //
 
-	public SNBTCompoundTag serializeNBT(HolderLookup.Provider provider) {
-		SNBTCompoundTag tag = new SNBTCompoundTag();
-		tag.store("id", UUIDUtil.CODEC, getId());
-		tag.putString("type", getType().getSerializedName());
-		serializeExtraNBT(tag);
+	public Json5Object toJson(HolderLookup.Provider provider) {
+		Json5Object json = new Json5Object();
+		json.add("id", UUIDUtil.STRING_CODEC.encodeStart(Json5Ops.INSTANCE, getId()).getOrThrow());
+		json.addProperty("type", getType().getSerializedName());
 
-		SNBTCompoundTag ranksNBT = new SNBTCompoundTag();
+		serializeExtraJson(json);
 
+		Json5Object ranksNBT = new Json5Object();
 		for (Map.Entry<UUID, TeamRank> entry : ranks.entrySet()) {
-			ranksNBT.putString(entry.getKey().toString(), entry.getValue().getSerializedName());
+			ranksNBT.addProperty(entry.getKey().toString(), entry.getValue().getSerializedName());
 		}
 
-		tag.put("ranks", ranksNBT);
-		tag.put("properties", properties.write(new SNBTCompoundTag()));
-		tag.store("message_history", TeamMessageImpl.LIST_CODEC, getMessageHistory());
+		json.add("ranks", ranksNBT);
+		json.add("properties", properties.toJson(new Json5Object()));
+		Json5Util.store(json, "message_history", TeamMessageImpl.LIST_CODEC, getMessageHistory());
 
-		TeamEvent.SAVED.invoker().accept(new TeamEvent(this));
-		tag.put("extra", extraData);
-
-		return tag;
+		return json;
 	}
 
-	protected void serializeExtraNBT(CompoundTag tag) {
+	protected void serializeExtraJson(Json5Object tag) {
 	}
 
-	public void deserializeNBT(CompoundTag tag, HolderLookup.Provider provider) {
+	public void deserializeJson(@UnknownNullability Json5Object json, HolderLookup.Provider provider) {
 		ranks.clear();
-		CompoundTag ranksNBT = tag.getCompoundOrEmpty("ranks");
+		Json5Util.getJson5Object(json, "ranks").ifPresent(ranksJson -> {
+			ranksJson.asMap().forEach((key, val) ->
+					ranks.put(UUID.fromString(key), TeamRank.NAME_MAP.get(val.getAsString())));
+		});
 
-		for (String s : ranksNBT.keySet()) {
-			ranks.put(UUID.fromString(s), TeamRank.NAME_MAP.get(ranksNBT.getString(s).orElseThrow()));
-		}
+		Json5Util.getJson5Object(json, "properties").ifPresent(properties::read);
 
-		properties.read(tag.getCompoundOrEmpty("properties"));
-		extraData = tag.getCompoundOrEmpty("extra");
 		messageHistory.clear();
+		Json5Util.fetch(json, "message_history", TeamMessageImpl.LIST_CODEC).ifPresent(messageHistory::addAll);
 
-		tag.read("message_history", TeamMessageImpl.LIST_CODEC).orElse(List.of()).forEach(this::addMessage);
-
-		TeamEvent.LOADED.invoker().accept(new TeamEvent(this));
+		NativeEventPosting.INSTANCE.postEvent(new TeamLoadedEvent.Data(this));
 	}
 
 	public <T> int settings(CommandSourceStack source, TeamProperty<T> key, String value) {
@@ -160,7 +156,7 @@ public abstract class AbstractTeam extends AbstractTeamBase {
 				Component valuec = Component.literal(value).withStyle(ChatFormatting.AQUA);
 				source.sendSuccess(() -> Component.translatable("ftbteams.message.set_property", keyc, valuec), true);
 
-				TeamEvent.PROPERTIES_CHANGED.invoker().accept(new TeamPropertiesChangedEvent(this, old));
+				NativeEventPosting.INSTANCE.postEvent(new TeamPropertiesChangedEvent.Data(this, old, false));
 				syncOnePropertyToAll(source.getServer(), key, optional.get());
 			} else {
 				source.sendFailure(Component.translatable("ftbteams.message.parse_failed", value));
@@ -245,9 +241,9 @@ public abstract class AbstractTeam extends AbstractTeamBase {
 		component.append("> ");
 		component.append(text);
 
-		for (ServerPlayer p : getOnlineMembers()) {
-			p.displayClientMessage(component, false);
-			NetworkHelper.sendTo(p, new SendMessageResponseMessage(from, text));
+		for (ServerPlayer sp : getOnlineMembers()) {
+			sp.sendSystemMessage(component);
+			Server2PlayNetworking.send(sp, new SendMessageResponseMessage(from, text));
 		}
 
 		markDirty();
@@ -256,34 +252,31 @@ public abstract class AbstractTeam extends AbstractTeamBase {
 	public void updatePropertiesFrom(TeamPropertyCollection newProperties) {
 		TeamPropertyCollection oldProperties = properties.copy();
 		properties.updateFrom(newProperties);
-		TeamEvent.PROPERTIES_CHANGED.invoker().accept(new TeamPropertiesChangedEvent(this, oldProperties));
+		NativeEventPosting.INSTANCE.postEvent(new TeamPropertiesChangedEvent.Data(this, oldProperties, false));
 		markDirty();
 	}
 
 	void saveIfNeeded(Path directory, HolderLookup.Provider provider) {
 		if (shouldSave) {
-            try {
-                SNBT.tryWrite(directory.resolve(getType().getSerializedName() + "/" + getId() + ".snbt"), serializeNBT(provider));
-            } catch (IOException e) {
-                FTBTeams.LOGGER.error("Failed to save team {}", getId(), e);
-            }
-            shouldSave = false;
+			try {
+				Json5Util.tryWrite(directory.resolve(getType().getSerializedName() + "/" + getId() + Json5Util.FILE_EXT), (Json5Element) toJson(provider));
+				NativeEventPosting.INSTANCE.postEvent(new TeamSavedEvent.Data(this));
+			} catch (IOException e) {
+				FTBTeams.LOGGER.error("Failed to save team {}", getId(), e);
+			}
+			shouldSave = false;
 		}
-	}
-
-	void copyExtraData(Team from) {
-		extraData = from.getExtraData().copy();
 	}
 
 	@Override
 	public <T> void syncOnePropertyToAll(MinecraftServer server, TeamProperty<T> property, T value) {
 		if (property.shouldSyncToAll()) {
-			NetworkHelper.sendToAll(server, UpdatePropertiesResponseMessage.oneProperty(getId(), property, value));
+			Server2PlayNetworking.sendToAllPlayers(server, UpdatePropertiesResponseMessage.oneProperty(getId(), property, value));
 		}
 	}
 
 	@Override
 	public <T> void syncOnePropertyToTeam(TeamProperty<T> property, T value) {
-		getOnlineMembers().forEach(sp -> NetworkHelper.sendTo(sp, UpdatePropertiesResponseMessage.oneProperty(getId(), property, value)));
+		getOnlineMembers().forEach(sp -> Server2PlayNetworking.send(sp, UpdatePropertiesResponseMessage.oneProperty(getId(), property, value)));
 	}
 }

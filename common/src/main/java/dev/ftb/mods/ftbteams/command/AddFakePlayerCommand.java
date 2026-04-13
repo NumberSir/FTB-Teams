@@ -2,7 +2,7 @@ package dev.ftb.mods.ftbteams.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import dev.architectury.platform.Platform;
+import dev.ftb.mods.ftblibrary.platform.Platform;
 import dev.ftb.mods.ftbteams.data.TeamManagerImpl;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -15,7 +15,7 @@ import java.util.Collection;
 public class AddFakePlayerCommand {
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("add_fake_player")
-                .requires(cs -> Platform.isDevelopmentEnvironment() && cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
+                .requires(cs -> Platform.get().isDev() && cs.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
                 .then(Commands.argument("profile", GameProfileArgument.gameProfile())
                         .executes(ctx -> addFakePlayer(GameProfileArgument.getGameProfiles(ctx, "profile")))
                 );

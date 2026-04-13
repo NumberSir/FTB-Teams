@@ -1,6 +1,6 @@
 package dev.ftb.mods.ftbteams.net;
 
-import dev.architectury.networking.NetworkManager;
+import dev.ftb.mods.ftblibrary.platform.network.PacketContext;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.property.TeamPropertyCollection;
 import dev.ftb.mods.ftbteams.client.FTBTeamsClient;
@@ -19,8 +19,8 @@ public record OpenMyTeamGUIMessage(TeamPropertyCollection properties, PlayerPerm
 			OpenMyTeamGUIMessage::new
 	);
 
-	public static void handle(OpenMyTeamGUIMessage message, NetworkManager.PacketContext context) {
-		context.queue(() -> FTBTeamsClient.openMyTeamGui(message.properties, message.permissions));
+	public static void handle(OpenMyTeamGUIMessage message, PacketContext ignored) {
+		FTBTeamsClient.openMyTeamGui(message.properties, message.permissions);
 	}
 
 	@Override

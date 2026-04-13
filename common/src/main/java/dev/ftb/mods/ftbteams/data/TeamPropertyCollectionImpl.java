@@ -1,14 +1,14 @@
 package dev.ftb.mods.ftbteams.data;
 
-import dev.ftb.mods.ftbteams.api.event.TeamCollectPropertiesEvent;
-import dev.ftb.mods.ftbteams.api.event.TeamEvent;
+import de.marhali.json5.Json5Element;
+import de.marhali.json5.Json5Object;
+import dev.ftb.mods.ftblibrary.platform.event.NativeEventPosting;
+import dev.ftb.mods.ftbteams.api.event.CollectTeamPropertiesEvent;
 import dev.ftb.mods.ftbteams.api.property.TeamProperty;
 import dev.ftb.mods.ftbteams.api.property.TeamPropertyCollection;
 import dev.ftb.mods.ftbteams.api.property.TeamPropertyType;
 import dev.ftb.mods.ftbteams.api.property.TeamPropertyValue;
 import net.minecraft.IdentifierException;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
@@ -42,7 +42,8 @@ public class TeamPropertyCollectionImpl implements TeamPropertyCollection {
 
 	public void collectProperties() {
 		map.clear();
-		TeamEvent.COLLECT_PROPERTIES.invoker().accept(new TeamCollectPropertiesEvent(map::putDefaultProperty));
+
+		NativeEventPosting.INSTANCE.postEvent(new CollectTeamPropertiesEvent.Data(map::putDefaultProperty));
 	}
 
 	@Override
@@ -93,7 +94,7 @@ public class TeamPropertyCollectionImpl implements TeamPropertyCollection {
 		return p;
 	}
 
-	public void write(RegistryFriendlyByteBuf buffer) {
+	public void toJson(RegistryFriendlyByteBuf buffer) {
 		TeamPropertyCollectionImpl.STREAM_CODEC.encode(buffer, this);
 	}
 
@@ -114,12 +115,14 @@ public class TeamPropertyCollectionImpl implements TeamPropertyCollection {
 		});
 	}
 
-	public void read(CompoundTag tag) {
-		tag.forEach((key, val) -> map.findProperty(key).ifPresent(prop -> map.putPropertyFromNBT(prop, val)));
+	public void read(Json5Object json) {
+		json.asMap().forEach((key, val) ->
+				map.findProperty(key).ifPresent(prop -> map.putPropertyFromJson(prop, val)));
 	}
 
-	public CompoundTag write(CompoundTag tag) {
-		map.forEachProperty((key, value) -> tag.put(key.getId().toString(), key.toNBT(value.getValue())));
+	public Json5Object toJson(Json5Object tag) {
+		map.forEachProperty((key, value) ->
+				tag.add(key.getId().toString(), key.toJson(value.getValue())));
 
 		return tag;
 	}
@@ -156,8 +159,8 @@ public class TeamPropertyCollectionImpl implements TeamPropertyCollection {
 			byId.put(prop.getId(), prop);
 		}
 
-		void putPropertyFromNBT(TeamProperty<?> prop, Tag tag) {
-			backingMap.put(prop, TeamPropertyValue.fromNBT(prop, tag));
+		void putPropertyFromJson(TeamProperty<?> prop, Json5Element tag) {
+			backingMap.put(prop, TeamPropertyValue.fromJson(prop, tag));
 			byId.put(prop.getId(), prop);
 		}
 

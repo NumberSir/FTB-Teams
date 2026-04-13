@@ -1,6 +1,6 @@
 package dev.ftb.mods.ftbteams.net;
 
-import dev.architectury.networking.NetworkManager;
+import dev.ftb.mods.ftblibrary.platform.network.PacketContext;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.TeamManager;
 import net.minecraft.network.FriendlyByteBuf;
@@ -19,12 +19,10 @@ public enum ToggleChatRedirectionMessage implements CustomPacketPayload {
         return TYPE;
     }
 
-    public static void handle(ToggleChatRedirectionMessage ignored, NetworkManager.PacketContext packetContext) {
-        if (packetContext.getPlayer() instanceof ServerPlayer sp) {
-            packetContext.queue(() -> {
-                TeamManager mgr = FTBTeamsAPI.api().getManager();
-                mgr.setChatRedirected(sp, !mgr.isChatRedirected(sp));
-            });
+    public static void handle(ToggleChatRedirectionMessage ignored, PacketContext packetContext) {
+        if (packetContext.player() instanceof ServerPlayer sp) {
+            TeamManager mgr = FTBTeamsAPI.api().getManager();
+            FTBTeamsAPI.api().getManager().setChatRedirected(sp, !mgr.isChatRedirected(sp));
         }
     }
 }

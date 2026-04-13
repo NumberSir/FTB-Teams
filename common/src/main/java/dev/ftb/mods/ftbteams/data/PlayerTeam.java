@@ -2,14 +2,15 @@ package dev.ftb.mods.ftbteams.data;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import de.marhali.json5.Json5Object;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
-import dev.ftb.mods.ftblibrary.util.NetworkHelper;
+import dev.ftb.mods.ftblibrary.json5.Json5Util;
+import dev.ftb.mods.ftblibrary.platform.network.Server2PlayNetworking;
 import dev.ftb.mods.ftbteams.api.Team;
 import dev.ftb.mods.ftbteams.api.TeamRank;
 import dev.ftb.mods.ftbteams.api.client.KnownClientPlayer;
 import dev.ftb.mods.ftbteams.net.UpdatePresenceMessage;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
 import org.jspecify.annotations.Nullable;
@@ -72,14 +73,15 @@ public class PlayerTeam extends AbstractTeam {
 	}
 
 	@Override
-	protected void serializeExtraNBT(CompoundTag tag) {
-		tag.putString("player_name", playerName);
+	protected void serializeExtraJson(Json5Object json) {
+		json.addProperty("player_name", playerName);
 	}
 
 	@Override
-	public void deserializeNBT(CompoundTag tag, HolderLookup.Provider provider) {
-		super.deserializeNBT(tag, provider);
-		playerName = tag.getStringOr("player_name", "");
+	public void deserializeJson(Json5Object json, HolderLookup.Provider provider) {
+		super.deserializeJson(json, provider);
+
+		playerName = Json5Util.getString(json, "player_name").orElse("");
 	}
 
 	@Nullable
@@ -99,7 +101,7 @@ public class PlayerTeam extends AbstractTeam {
 	}
 
 	public void updatePresence() {
-		NetworkHelper.sendToAll(manager.getServer(), new UpdatePresenceMessage(createClientPlayer()));
+		Server2PlayNetworking.sendToAllPlayers(manager.getServer(), new UpdatePresenceMessage(createClientPlayer()));
 	}
 
 	public Team createParty(UUID playerId, @Nullable ServerPlayer player, String name, String description, int color, Set<GameProfile> invited) throws CommandSyntaxException {
@@ -118,8 +120,8 @@ public class PlayerTeam extends AbstractTeam {
 		return new KnownClientPlayer(
 				isOnline(),
 				getTeamId(),
-				new GameProfile(getId(), getPlayerName()),
-				getExtraData()
+				new GameProfile(getId(), getPlayerName())
+//				getExtraData()
 		);
 	}
 }

@@ -2,14 +2,13 @@ package dev.ftb.mods.ftbteams.api.property;
 
 import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
+import dev.ftb.mods.ftbteams.api.event.CollectTeamPropertiesEvent;
 
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
-/**
- * These are the standard team properties which are registered for every team. Other mods may add additional properties;
- * see {@link dev.ftb.mods.ftbteams.api.event.TeamCollectPropertiesEvent}.
- */
+/// These are the standard team properties which are registered for every team. Other mods may add additional properties;
+/// see [CollectTeamPropertiesEvent].
 public class TeamProperties {
     public static final StringProperty DISPLAY_NAME
             = (StringProperty) new StringProperty(FTBTeamsAPI.id("display_name"), "", Pattern.compile(".{3,}"))
@@ -25,6 +24,10 @@ public class TeamProperties {
             = new IntProperty(FTBTeamsAPI.id("max_msg_history_size"), 1000);
     public static final StringSetProperty TEAM_STAGES
             = (StringSetProperty) new StringSetProperty(FTBTeamsAPI.id("team_stages"), new HashSet<>())
+            .hidden()
+            .notPlayerEditable();
+    public static final IntProperty LIVES_REMAINING
+            = (IntProperty) new IntProperty(FTBTeamsAPI.id("lives_remaining"), 0, 0, Integer.MAX_VALUE)
             .hidden()
             .notPlayerEditable();
 }

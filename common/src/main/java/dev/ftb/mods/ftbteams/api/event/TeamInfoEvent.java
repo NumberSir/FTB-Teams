@@ -1,22 +1,25 @@
 package dev.ftb.mods.ftbteams.api.event;
 
 import dev.ftb.mods.ftbteams.api.Team;
-import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 
-public class TeamInfoEvent extends TeamEvent {
-	private final CommandSourceStack source;
+import java.util.function.Consumer;
 
-	public TeamInfoEvent(Team t, CommandSourceStack p) {
-		super(t);
-		source = p;
-	}
-
-	public CommandSourceStack getSource() {
-		return source;
-	}
-
-	public void add(Component component) {
-		source.sendSuccess(() -> component, false);
+/// Fired on both client and server to add extra info lines to a team info display
+/// * On server, fired when the `/team info` command is used
+/// * On client, fired when team screen "Info" button is moused-over
+/// Your listener can use [Team#isClientTeam()] to easily check which side you are on.
+///
+/// Corresponding platform-native events to listen to:
+/// /// * `FTBTeamsEvent.Info` (NeoForge)
+/// /// * `FTBTeamsEvents.INFO` (Fabric)
+@FunctionalInterface
+public interface TeamInfoEvent extends Consumer<TeamInfoEvent.Data> {
+	/// @param team the team to add info lines
+	/// @param consumer a consumer to accept new [Component] lines
+	record Data(Team team, Consumer<Component> consumer) {
+		public void add(Component component) {
+			consumer.accept(component);
+		}
 	}
 }

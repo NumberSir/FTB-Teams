@@ -1,7 +1,7 @@
 package dev.ftb.mods.ftbteams.net;
 
-import dev.architectury.networking.NetworkManager;
-import dev.ftb.mods.ftblibrary.util.NetworkHelper;
+import dev.ftb.mods.ftblibrary.platform.network.PacketContext;
+import dev.ftb.mods.ftblibrary.platform.network.Server2PlayNetworking;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.property.TeamPropertyCollection;
 import dev.ftb.mods.ftbteams.data.AbstractTeam;
@@ -19,17 +19,19 @@ public record UpdatePropertiesRequestMessage(TeamPropertyCollection properties) 
 			UpdatePropertiesRequestMessage::new
 	);
 
-	public static void handle(UpdatePropertiesRequestMessage message, NetworkManager.PacketContext context) {
-		context.queue(() -> {
-			ServerPlayer player = (ServerPlayer) context.getPlayer();
-
+	public static void handle(UpdatePropertiesRequestMessage message, PacketContext context) {
+		if (context.player() instanceof ServerPlayer player) {
 			FTBTeamsAPI.api().getManager().getTeamForPlayer(player).ifPresent(team -> {
 				if (team instanceof AbstractTeam abstractTeam && abstractTeam.isOfficerOrBetter(player.getUUID())) {
-					abstractTeam.updatePropertiesFrom(message.properties.copyIf(teamProperty -> teamProperty.isPlayerEditable() && !teamProperty.isHidden()));
-					NetworkHelper.sendToAll(player.level().getServer(), new UpdatePropertiesResponseMessage(team.getId(), abstractTeam.getProperties()));
+					abstractTeam.updatePropertiesFrom(message.properties.copyIf(teamProperty ->
+							teamProperty.isPlayerEditable() && !teamProperty.isHidden())
+					);
+					Server2PlayNetworking.sendToAllPlayers(player.level().getServer(),
+							new UpdatePropertiesResponseMessage(team.getId(), abstractTeam.getProperties())
+					);
 				}
 			});
-		});
+		}
 	}
 
 	@Override
