@@ -19,7 +19,7 @@ allprojects {
 	apply plugin: 'java-library'
 	apply plugin: 'maven-publish'
 
-	version = project.mod_version
+	version = createModVersion(project)
 	group = project.maven_group
 
 	base {
@@ -86,8 +86,7 @@ idea {
 publishMods {
 	dryRun = providers.environmentVariable("CURSEFORGE_KEY").getOrNull() == null || providers.environmentVariable("SKIP_CURSEFORGE").getOrNull() != null
 	changelog = createChangelog(project)
-	version = mod_version
-
+	version = project.version
 	type = createReleaseType(project)
 
 	def createOptions = (String projectName) -> {
