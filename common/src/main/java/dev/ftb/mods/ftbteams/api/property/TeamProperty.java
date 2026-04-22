@@ -66,8 +66,10 @@ public abstract class TeamProperty<T> {
 		return hidden;
 	}
 
-	/// Mark a property as not player-editable (see [#isPlayerEditable()]). Should be called during property
-	/// declaration.
+	/// Mark a property as not player-editable (see [#isPlayerEditable()]).  Such properties can only be adjusted in
+	///  code, via the API.
+	///
+	/// Call this when the property is initially defined (see [TeamProperties#TEAM_STAGES] for an example).
 	///
 	/// @return the same property
 	public TeamProperty<T> notPlayerEditable() {
@@ -75,6 +77,11 @@ public abstract class TeamProperty<T> {
 		return this;
 	}
 
+	/// Mark a property as hidden from the properties settings GUI (see also [#isHidden()]). Hidden properties are still
+	/// visible via commands (e.g. `/ftbteams party settings ...`); see also [#notPlayerEditable()] if you want to
+	/// ensure the property cannot be edited by players at all.
+	///
+	/// Call this when the property is initially defined (see [TeamProperties#TEAM_STAGES] for an example).
 	public TeamProperty<T> hidden() {
 		hidden = true;
 		return this;
@@ -143,8 +150,8 @@ public abstract class TeamProperty<T> {
 		return fromString(buf.readUtf(Short.MAX_VALUE)).orElse(getDefaultValue());
 	}
 
-	/// Write one value of this property to the network. The default implementation (stringify, and write the string to
-	/// a `StringTag`) should work for all property types, but is typically not the most efficient way to do it.
+	/// Write one value of this property to a Json5 element. The default implementation (stringify, and write the string
+	/// to a `Json5Primitive`) should work for all property types, but is typically not the most efficient way to do it.
 	///
 	/// @param value the value to write
 	/// @return the tag
@@ -152,7 +159,7 @@ public abstract class TeamProperty<T> {
 		return Json5Primitive.fromString(toString(value));
     }
 
-	/// Read one value of this property from a NBT tag.
+	/// Read one value of this property from a Json5 element.
 	///
 	/// @param json the tag to read from
 	/// @return the value that has been read
@@ -160,8 +167,8 @@ public abstract class TeamProperty<T> {
         return fromString(json.getAsString());
     }
 
-	/// Add this property to a `ConfigGroup` object, to allow interactive configuration via GUI. Returning null
-	/// here is valid, but properties of this type will not be GUI-editable.
+	/// Add this property to an [EditableConfigGroup] object, to allow interactive configuration via GUI. Returning null
+	/// here is allowed, but in that case, this property type will not be GUI-editable.
 	///
 	/// @param config the config group to add the property to
 	/// @param value  the property value to be added
@@ -190,19 +197,4 @@ public abstract class TeamProperty<T> {
 	public final String toString() {
 		return id.toString();
 	}
-
-//	@Deprecated(forRemoval = true)
-//	public TeamPropertyValue<T> createDefaultValue() {
-//		return new TeamPropertyValue<>(this, getDefaultValue());
-//	}
-//
-//	@Deprecated(forRemoval = true)
-//	public TeamPropertyValue<T> createValueFromNetwork(RegistryFriendlyByteBuf buf) {
-//		return new TeamPropertyValue<>(this, readValue(buf));
-//	}
-//
-//	@Deprecated(forRemoval = true)
-//	public TeamPropertyValue<T> createValueFromNBT(Tag tag) {
-//		return new TeamPropertyValue<>(this, fromJson(tag).orElse(getDefaultValue()));
-//	}
 }

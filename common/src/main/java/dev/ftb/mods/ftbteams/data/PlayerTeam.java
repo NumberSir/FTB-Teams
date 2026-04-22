@@ -112,16 +112,11 @@ public class PlayerTeam extends AbstractTeam {
 		return team;
 	}
 
-	public boolean hasTeam() {
-		return effectiveTeam != this;
-	}
-
 	public KnownClientPlayer createClientPlayer() {
 		return new KnownClientPlayer(
 				isOnline(),
 				getTeamId(),
 				new GameProfile(getId(), getPlayerName())
-//				getExtraData()
 		);
 	}
 }

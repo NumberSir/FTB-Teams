@@ -27,6 +27,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Util;
 import org.apache.logging.log4j.LogManager;
@@ -67,11 +68,11 @@ public class FTBTeams {
 		}
 	}
 
-	public void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext commandBuildContext, Commands.CommandSelection selection) {
+	public void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext ignoredContext, Commands.CommandSelection ignoredSelection) {
 		new FTBTeamsCommands().register(dispatcher);
 	}
 
-	public void serverStopped(MinecraftServer server) {
+	public void serverStopped(MinecraftServer ignoredServer) {
 		if (TeamManagerImpl.INSTANCE != null) {
 			NativeEventPosting.INSTANCE.postEvent(new TeamManagerEvent.Data(TeamManagerImpl.INSTANCE, TeamManagerEvent.Action.DESTROYED));
 			TeamManagerImpl.INSTANCE = null;
@@ -116,22 +117,22 @@ public class FTBTeams {
 		return Outcome.PASS;
 	}
 
-    public static void playerCloned(ServerPlayer oldPlayer, ServerPlayer newPlayer, boolean wonGame) {
+    public static void playerCloned(ServerPlayer ignoredOldPlayer, ServerPlayer newPlayer, boolean wonGame) {
 		if (!wonGame) {
 			ServerConfig.limitedLives().ifPresent(maxLives -> FTBTeamsAPI.api().getManager().getTeamForPlayer(newPlayer).ifPresent(team -> {
 				if (team instanceof PartyTeam partyTeam) {
 					MinecraftServer server = newPlayer.level().getServer();
 					// defer a tick so player is alive again and gets client team syncs
-					if (server != null) server.submit(() -> {
-						int newLives = partyTeam.getProperty(TeamProperties.LIVES_REMAINING) - 1;
-						if (newLives >= 0) {
-							partyTeam.setProperty(TeamProperties.LIVES_REMAINING, newLives);
-							partyTeam.syncOnePropertyToTeam(TeamProperties.LIVES_REMAINING, newLives);
-							partyTeam.sendMessage(Util.NIL_UUID, Component.translatable("ftbteams.lost_a_life", newLives, maxLives).withStyle(ChatFormatting.RED));
-						} else {
-							kickPlayerNoLivesLeft(newPlayer, partyTeam);
-						}
-					});
+                    server.schedule(new TickTask(server.getTickCount(), () -> {
+                        int newLives = partyTeam.getProperty(TeamProperties.LIVES_REMAINING) - 1;
+                        if (newLives >= 0) {
+                            partyTeam.setProperty(TeamProperties.LIVES_REMAINING, newLives);
+                            partyTeam.syncOnePropertyToTeam(TeamProperties.LIVES_REMAINING, newLives);
+                            partyTeam.sendMessage(Util.NIL_UUID, Component.translatable("ftbteams.lost_a_life", newLives, maxLives).withStyle(ChatFormatting.RED));
+                        } else {
+                            kickPlayerNoLivesLeft(newPlayer, partyTeam);
+                        }
+                    }));
 				}
 			}));
 		}

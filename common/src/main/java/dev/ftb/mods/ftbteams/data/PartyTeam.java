@@ -189,7 +189,7 @@ public class PartyTeam extends AbstractTeam {
 		return Command.SINGLE_SUCCESS;
 	}
 
-	public int promote(ServerPlayer from, Collection<NameAndId> players) throws CommandSyntaxException {
+	public void promote(ServerPlayer from, Collection<NameAndId> players) throws CommandSyntaxException {
 		boolean changesMade = false;
 		for (NameAndId player : players) {
 			UUID id = player.id();
@@ -206,11 +206,9 @@ public class PartyTeam extends AbstractTeam {
 			markDirty();
 			manager.syncToAll(this);
 		}
-
-		return Command.SINGLE_SUCCESS;
 	}
 
-	public int demote(ServerPlayer from, Collection<NameAndId> players) throws CommandSyntaxException {
+	public void demote(ServerPlayer from, Collection<NameAndId> players) throws CommandSyntaxException {
 		boolean changesMade = false;
 		for (NameAndId player : players) {
 			UUID id = player.id();
@@ -227,8 +225,6 @@ public class PartyTeam extends AbstractTeam {
 			markDirty();
 			manager.syncToAll(this);
 		}
-
-		return Command.SINGLE_SUCCESS;
 	}
 
 	public int transferOwnership(CommandSourceStack from, Collection<NameAndId> toProfiles) throws CommandSyntaxException {

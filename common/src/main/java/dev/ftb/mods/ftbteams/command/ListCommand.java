@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 public class ListCommand {
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("list")
-                .executes(ctx -> list(ctx.getSource(), t -> true))
+                .executes(ctx -> list(ctx.getSource(), _ -> true))
                 .then(Commands.literal("parties")
                         .executes(ctx -> list(ctx.getSource(), Team::isPartyTeam))
                 )

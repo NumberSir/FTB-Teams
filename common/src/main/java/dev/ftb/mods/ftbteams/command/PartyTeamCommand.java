@@ -113,7 +113,7 @@ public class PartyTeamCommand {
             if (FTBTeamsAPIImpl.INSTANCE.isPartyCreationFromAPIOnly()) {
                 throw TeamArgument.API_OVERRIDE.create();
             }
-            TeamManagerImpl.INSTANCE.createParty(source.getPlayerOrException(), partyName);
+            var ignoredParty = TeamManagerImpl.INSTANCE.createParty(source.getPlayerOrException(), partyName);
             return Command.SINGLE_SUCCESS;
         }
         return 0;
