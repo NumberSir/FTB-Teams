@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * Added `TeamPropertiesChangedEvent#hasPropertyChanged` convenience method
 
+### Fixed
+* Fixed boolean team properties not deserializing correctly
+
 ## [26.1.2.2-beta]
 
 ### Changed
