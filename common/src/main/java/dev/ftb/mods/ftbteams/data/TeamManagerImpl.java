@@ -2,7 +2,6 @@ package dev.ftb.mods.ftbteams.data;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import de.marhali.json5.Json5Array;
-import de.marhali.json5.Json5Element;
 import de.marhali.json5.Json5Object;
 import de.marhali.json5.Json5Primitive;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
@@ -155,7 +154,7 @@ public class TeamManagerImpl implements TeamManager {
 			saveNow();
 			FTBTeams.LOGGER.info("Created initial manager file {}", managerFile);
 		}
-		Json5Object dataFileJson = Json5Util.tryRead(managerFile);
+		Json5Object dataFileJson = Json5Util.load(managerFile);
 
 		id = Json5Util.fetch(dataFileJson, "id", UUIDUtil.STRING_CODEC).orElseThrow();
 
@@ -183,7 +182,7 @@ public class TeamManagerImpl implements TeamManager {
 				try (Stream<Path> s = Files.list(dir)) {
 					s.filter(path -> path.getFileName().toString().endsWith(Json5Util.FILE_EXT)).forEach(file -> {
                         try {
-                            Json5Object teamJson = Json5Util.tryRead(file);
+                            Json5Object teamJson = Json5Util.load(file);
                             AbstractTeam team = type.createTeam(this, Json5Util.fetch(teamJson, "id", UUIDUtil.STRING_CODEC).orElseThrow());
 							teamMap.put(team.id, team);
 							team.deserializeJson(teamJson, server.registryAccess());
@@ -234,7 +233,7 @@ public class TeamManagerImpl implements TeamManager {
 			NativeEventPosting.INSTANCE.postEvent(new TeamManagerEvent.Data(this, TeamManagerEvent.Action.SAVED));
 			Path path = managerFile();
 			try {
-				Json5Util.tryWrite(path, (Json5Element) toJson());
+				Json5Util.save(path, toJson());
             } catch (IOException e) {
                 FTBTeams.LOGGER.error("can't save {}: {}", path, e.getMessage());
             }
