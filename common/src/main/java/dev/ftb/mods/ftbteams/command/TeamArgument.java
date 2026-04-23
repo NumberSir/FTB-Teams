@@ -52,7 +52,7 @@ public class TeamArgument implements ArgumentType<TeamArgumentProvider> {
 	@Nullable
 	private final TeamType type;
 
-    public static TeamArgument create() {
+	public static TeamArgument create() {
 		return new TeamArgument(null);
 	}
 
@@ -65,16 +65,10 @@ public class TeamArgument implements ArgumentType<TeamArgumentProvider> {
 	}
 
 	private TeamArgument(@Nullable TeamType type) {
-        this.type = type;
-    }
+		this.type = type;
+	}
 
-	private static class SelectorProvider implements TeamArgumentProvider {
-		private final EntitySelector selector;
-
-		private SelectorProvider(EntitySelector s) {
-			selector = s;
-		}
-
+	private record SelectorProvider(EntitySelector selector) implements TeamArgumentProvider {
 		@Override
 		public Team getTeam(CommandSourceStack source) throws CommandSyntaxException {
 			ServerPlayer player = selector.findSinglePlayer(source);
@@ -83,13 +77,7 @@ public class TeamArgument implements ArgumentType<TeamArgumentProvider> {
 		}
 	}
 
-	private static class IDProvider implements TeamArgumentProvider {
-		private final String id;
-
-		private IDProvider(String s) {
-			id = s;
-		}
-
+	private record IDProvider(String id) implements TeamArgumentProvider {
 		private CommandSyntaxException error() {
 			return TeamArgument.TEAM_NOT_FOUND.create(id);
 		}
@@ -102,10 +90,10 @@ public class TeamArgument implements ArgumentType<TeamArgumentProvider> {
 			}
 
 			return source.getServer().services().nameToIdCache().get(id)
-							.map(NameAndId::id)
-							.map(FTBTeamsAPI.api().getManager()::getTeamForPlayerID)
-							.orElseThrow()
-							.orElseThrow(this::error);
+					.map(NameAndId::id)
+					.map(FTBTeamsAPI.api().getManager()::getTeamForPlayerID)
+					.orElseThrow()
+					.orElseThrow(this::error);
 		}
 	}
 

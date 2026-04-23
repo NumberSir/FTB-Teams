@@ -64,7 +64,7 @@ public class CreatePartyScreen extends BaseScreen implements NordColors, Invitat
 	@Override
 	public void addWidgets() {
 		Button closeButton;
-		add(closeButton = new SimpleButton(this, Component.translatable("gui.cancel"), Icons.CANCEL.withTint(SNOW_STORM_2), (b, mb) -> closeGui()) {
+		add(closeButton = new SimpleButton(this, Component.translatable("gui.cancel"), Icons.CANCEL.withTint(SNOW_STORM_2), (_, _) -> closeGui()) {
 			@Override
 			public void draw(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
 				drawIcon(graphics, theme, x, y, w, h);
@@ -72,7 +72,7 @@ public class CreatePartyScreen extends BaseScreen implements NordColors, Invitat
 		});
 
 		Button colorButton;
-		add(colorButton = new SimpleButton(this, Component.translatable("gui.color"), teamColor.withBorder(POLAR_NIGHT_0, false), (b, mb) -> {
+		add(colorButton = new SimpleButton(this, Component.translatable("gui.color"), teamColor.withBorder(POLAR_NIGHT_0, false), (b, _) -> {
 			teamColor = FTBTUtils.randomColor();
 			b.setIcon(teamColor.withBorder(POLAR_NIGHT_0, false));
 		}) {

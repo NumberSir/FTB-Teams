@@ -9,12 +9,7 @@ import java.util.OptionalInt;
 public interface ServerConfig {
     String KEY = FTBTeamsAPI.MOD_ID + "-server";
 
-    Config CONFIG = Config.create(KEY)
-            .comment("Server-specific configuration for FTB Teams",
-                    "Modpack defaults should be defined in <instance>/config/" + KEY + ".json5",
-                    "  (may be overwritten on modpack update)",
-                    "Server admins may locally override this by copying into <instance>/world/serverconfig/" + KEY + ".json5",
-                    "  (will NOT be overwritten on modpack update)");
+    Config CONFIG = Config.create(KEY).standardTopLevelComment(FTBTeamsAPI.MOD_NAME, KEY, false);
 
     IntValue LIMITED_LIVES = CONFIG.addInt("limited_lives", 0, 0, Integer.MAX_VALUE)
             .comment("If >0, party teams have this many limited lives:",

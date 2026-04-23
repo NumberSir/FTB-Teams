@@ -105,7 +105,7 @@ public abstract class AbstractTeam extends AbstractTeamBase {
 
 	// Data IO //
 
-	public Json5Object toJson(HolderLookup.Provider provider) {
+	public Json5Object toJson() {
 		Json5Object json = new Json5Object();
 		json.add("id", UUIDUtil.STRING_CODEC.encodeStart(Json5Ops.INSTANCE, getId()).getOrThrow());
 		json.addProperty("type", getType().getSerializedName());
@@ -129,10 +129,9 @@ public abstract class AbstractTeam extends AbstractTeamBase {
 
 	public void deserializeJson(@UnknownNullability Json5Object json, HolderLookup.Provider provider) {
 		ranks.clear();
-		Json5Util.getJson5Object(json, "ranks").ifPresent(ranksJson -> {
-			ranksJson.asMap().forEach((key, val) ->
-					ranks.put(UUID.fromString(key), TeamRank.NAME_MAP.get(val.getAsString())));
-		});
+		Json5Util.getJson5Object(json, "ranks").ifPresent(ranksJson ->
+				ranksJson.asMap().forEach((key, val) ->
+						ranks.put(UUID.fromString(key), TeamRank.NAME_MAP.get(val.getAsString()))));
 
 		Json5Util.getJson5Object(json, "properties").ifPresent(properties::read);
 
@@ -256,10 +255,10 @@ public abstract class AbstractTeam extends AbstractTeamBase {
 		markDirty();
 	}
 
-	void saveIfNeeded(Path directory, HolderLookup.Provider provider) {
+	void saveIfNeeded(Path directory) {
 		if (shouldSave) {
 			try {
-				Json5Util.tryWrite(directory.resolve(getType().getSerializedName() + "/" + getId() + Json5Util.FILE_EXT), (Json5Element) toJson(provider));
+				Json5Util.save(directory.resolve(getType().getSerializedName() + "/" + getId() + Json5Util.FILE_EXT), toJson());
 				NativeEventPosting.INSTANCE.postEvent(new TeamSavedEvent.Data(this));
 			} catch (IOException e) {
 				FTBTeams.LOGGER.error("Failed to save team {}", getId(), e);

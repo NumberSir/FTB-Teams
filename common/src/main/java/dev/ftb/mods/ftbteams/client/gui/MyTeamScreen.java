@@ -69,7 +69,7 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 		teamID = getManager().selfTeam().getId();
 
 		settingsButton = new SettingsButton(this);
-		infoButton = new SimpleButton(this, Component.empty(), Icons.INFO, (w, mb) -> {}) {
+		infoButton = new SimpleButton(this, Component.empty(), Icons.INFO, (_, _) -> {}) {
 			@Override
 			public void addMouseOverText(TooltipList list) {
 				addTeamInfo(list);
@@ -79,7 +79,7 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 			public void playClickSound() {
 			}
 		};
-		missingDataButton = new SimpleButton(this, Component.empty(), Icons.CANCEL, (w, mb) -> {}) {
+		missingDataButton = new SimpleButton(this, Component.empty(), Icons.CANCEL, (_, _) -> {}) {
 			@Override
 			public void addMouseOverText(TooltipList list) {
 				list.add(Component.translatable("ftbteams.missing_data").withStyle(ChatFormatting.RED));
@@ -151,7 +151,7 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 		colorButton.setPosAndSize(5, 5, 12, 12);
 		infoButton.setPosAndSize(20, 3, 16, 16);
 		if (!getManager().isValid()) missingDataButton.setPosAndSize(40, 3, 16, 16);
-		if (livesButton != null) livesButton.setPosAndSize(40, 3, 16, 16);
+        livesButton.setPosAndSize(40, 3, 16, 16);
 
 		settingsButton.setPosAndSize(width - 19, 3, 16, 16);
 		inviteButton.setPosAndSize(width - 37, 3, 16, 16);
@@ -203,7 +203,7 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 
 	private class InviteButton extends SimpleButton {
 		public InviteButton(Panel panel) {
-			super(panel, Component.translatable("ftbteams.gui.invite"), Icons.ADD, (w, mb) -> new InviteScreen().openGui());
+			super(panel, Component.translatable("ftbteams.gui.invite"), Icons.ADD, (_, _) -> new InviteScreen().openGui());
 		}
 
 		@Override
@@ -223,7 +223,7 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 
 	private class AllyButton extends SimpleButton {
 		public AllyButton(Panel panel) {
-			super(panel, Component.translatable("ftbteams.gui.manage_allies"), Icons.FRIENDS, (w, mb) -> new AllyScreen().openGui());
+			super(panel, Component.translatable("ftbteams.gui.manage_allies"), Icons.FRIENDS, (_, _) -> new AllyScreen().openGui());
 		}
 
 		@Override
@@ -244,7 +244,7 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 	private static class ToggleChatButton extends SimpleButton {
 		public ToggleChatButton(Panel panel) {
 			super(panel, Component.translatable("ftbteams.gui.toggle_chat"), Icons.CHAT,
-					(b, mb) -> Play2ServerNetworking.send(ToggleChatRedirectionMessage.INSTANCE)
+					(_, _) -> Play2ServerNetworking.send(ToggleChatRedirectionMessage.INSTANCE)
 			);
 		}
 
@@ -351,7 +351,7 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 
 			Map<TeamRank, List<KnownClientPlayer>> byRank = new EnumMap<>(TeamRank.class);
 			manager.selfTeam().getPlayersByRank(TeamRank.NONE).forEach((id, rank) ->
-					manager.getKnownPlayer(id).ifPresent(kcp -> byRank.computeIfAbsent(rank, k -> new ArrayList<>()).add(kcp)));
+					manager.getKnownPlayer(id).ifPresent(kcp -> byRank.computeIfAbsent(rank, _ -> new ArrayList<>()).add(kcp)));
 
 			for (TeamRank rank : PARTY_RANKS) {
 				byRank.getOrDefault(rank, List.of()).stream()
@@ -387,7 +387,7 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 	private static class SettingsButton extends SimpleButton {
 		public SettingsButton(MyTeamScreen screen) {
 			super(screen, Component.translatable("gui.settings"), Icons.SETTINGS.withTint(NordColors.SNOW_STORM_2),
-					(b, mb) -> onClick(screen));
+					(_, _) -> onClick(screen));
 		}
 
 		private static void onClick(MyTeamScreen screen) {
@@ -402,7 +402,7 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 			screen.properties.forEach((key, value) -> {
 				if (!key.isHidden()) {
 					String groupName = key.getId().getNamespace();
-					EditableConfigGroup cfg = subGroups.computeIfAbsent(groupName, k -> config.getOrCreateSubgroup(groupName));
+					EditableConfigGroup cfg = subGroups.computeIfAbsent(groupName, _ -> config.getOrCreateSubgroup(groupName));
 					var val = key.config(cfg, value);
 					if (val != null && !key.isPlayerEditable()) {
 						val.setCanEdit(false);
@@ -423,7 +423,7 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 		public ColorButton(MyTeamScreen screen) {
 			super(MyTeamScreen.this, Component.translatable("gui.color"),
 					screen.properties.get(TeamProperties.COLOR).withBorder(NordColors.POLAR_NIGHT_0, false),
-					(b, mb) -> onClick(screen, b)
+					(b, _) -> onClick(screen, b)
 			);
 		}
 
@@ -450,7 +450,7 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 
 	private class LivesButton extends SimpleButton {
 		public LivesButton() {
-			super(MyTeamScreen.this, Component.empty(), Icons.HEART, (btn, mb) -> {});
+			super(MyTeamScreen.this, Component.empty(), Icons.HEART, (_, _) -> {});
 		}
 
 		@Override

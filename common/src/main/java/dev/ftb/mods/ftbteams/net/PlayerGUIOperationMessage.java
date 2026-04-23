@@ -64,7 +64,8 @@ public record PlayerGUIOperationMessage(Operation op, List<UUID> targets) implem
             final List<NameAndId> targetProfile = List.of(new NameAndId(targetId, ""));
             switch (op) {
                 case KICK -> {
-                    if (senderRank.getPower() > targetRank.getPower()) {
+                    if (senderRank.compareTo(targetRank) > 0) {
+//                    if (senderRank.getPower() > targetRank.getPower()) {
                         partyTeam.kick(sourcePlayer.createCommandSourceStack(), targetProfile);
                     }
                 }

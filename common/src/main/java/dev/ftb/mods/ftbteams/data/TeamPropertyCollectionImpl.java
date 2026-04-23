@@ -53,7 +53,7 @@ public class TeamPropertyCollectionImpl implements TeamPropertyCollection {
 
 	@Override
 	public TeamPropertyCollectionImpl copy() {
-		return copyIf(p -> true);
+		return copyIf(_ -> true);
 	}
 
 	@Override
@@ -102,7 +102,7 @@ public class TeamPropertyCollectionImpl implements TeamPropertyCollection {
 		// this is used when sync'ing team data for a different team
 		// player A only needs to know limited info (display name, color...) about team B if A isn't a member of B
 		PropertyMap subMap = new PropertyMap();
-		map.forEachProperty((prop, val) -> {
+		map.forEachProperty((prop, _) -> {
 			if (prop.shouldSyncToAll()) {
 				subMap.backingMap.put(prop, map.backingMap.get(prop));
 			}

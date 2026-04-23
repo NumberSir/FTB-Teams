@@ -8,11 +8,12 @@ import java.util.function.Consumer;
 /// Fired on both client and server to add extra info lines to a team info display
 /// * On server, fired when the `/team info` command is used
 /// * On client, fired when team screen "Info" button is moused-over
+///
 /// Your listener can use [Team#isClientTeam()] to easily check which side you are on.
 ///
 /// Corresponding platform-native events to listen to:
-/// /// * `FTBTeamsEvent.Info` (NeoForge)
-/// /// * `FTBTeamsEvents.INFO` (Fabric)
+/// * `FTBTeamsEvent.Info` (NeoForge)
+/// * `FTBTeamsEvents.INFO` (Fabric)
 @FunctionalInterface
 public interface TeamInfoEvent extends Consumer<TeamInfoEvent.Data> {
 	/// @param team the team to add info lines

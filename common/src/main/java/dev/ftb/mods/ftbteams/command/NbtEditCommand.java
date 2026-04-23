@@ -4,7 +4,6 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import de.marhali.json5.Json5Object;
 import dev.ftb.mods.ftblibrary.FTBLibraryCommands;
 import dev.ftb.mods.ftblibrary.json5.Json5Ops;
 import dev.ftb.mods.ftblibrary.net.EditNBTPacket;
@@ -54,8 +53,7 @@ public class NbtEditCommand {
                         .build()
                 );
             });
-            Json5Object json = abstractTeam.toJson(ctx.getSource().getServer().registryAccess());
-            if (Json5Ops.INSTANCE.convertTo(NbtOps.INSTANCE, json) instanceof CompoundTag tag) {
+            if (Json5Ops.INSTANCE.convertTo(NbtOps.INSTANCE, abstractTeam.toJson()) instanceof CompoundTag tag) {
                 Server2PlayNetworking.send(editor, new EditNBTPacket(info, tag));
             }
             return Command.SINGLE_SUCCESS;

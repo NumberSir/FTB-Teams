@@ -5,6 +5,7 @@ import dev.ftb.mods.ftblibrary.icon.Color4I;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -74,8 +75,9 @@ public interface TeamManager {
     /// @return all known player teams
     Map<UUID, ? extends Team> getKnownPlayerTeams();
 
-    /// Mark the manager as requiring serialization. The only time this should be necessary to call is if you change
-    /// any data in the compound returned by [#getExtraData()].
+    /// Mark the manager as requiring serialization. It should not normally be necessary to call this, and this method
+    /// may be removed from the API in the future.
+    @ApiStatus.Internal
     void markDirty();
 
     /// Attempt to create a party team for the given player.

@@ -39,7 +39,7 @@ public abstract class BaseInvitationScreen extends BaseScreen implements Invitat
                 .filter(this::shouldIncludePlayer)
                 .collect(Collectors.toSet());
 
-        closeButton = new SimpleButton(this, Component.translatable("gui.cancel"), Icons.CANCEL.withTint(SNOW_STORM_2), (simpleButton, mouseButton) -> closeGui()) {
+        closeButton = new SimpleButton(this, Component.translatable("gui.cancel"), Icons.CANCEL.withTint(SNOW_STORM_2), (_, _) -> closeGui()) {
             @Override
             public void draw(GuiGraphicsExtractor graphics, Theme theme, int x, int y, int w, int h) {
                 drawIcon(graphics, theme, x, y, w, h);
