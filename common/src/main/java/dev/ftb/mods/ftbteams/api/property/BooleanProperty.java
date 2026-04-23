@@ -62,7 +62,7 @@ public class BooleanProperty extends TeamProperty<Boolean> {
 
 	@Override
 	public Optional<Boolean> fromJson(Json5Element json) {
-        return json instanceof Json5Primitive p && p.isNumber() && p.getAsByte() == 1 ? TRUE : FALSE;
+        return json instanceof Json5Primitive p && (p.isBoolean() && p.getAsBoolean() || p.isNumber() && p.getAsByte() == 1) ? TRUE : FALSE;
     }
 
 	@Override
