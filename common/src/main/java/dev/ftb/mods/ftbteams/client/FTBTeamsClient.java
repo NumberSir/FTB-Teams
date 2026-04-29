@@ -2,10 +2,13 @@ package dev.ftb.mods.ftbteams.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.ftb.mods.ftblibrary.api.event.client.SidebarButtonCreatedEvent;
+import dev.ftb.mods.ftblibrary.client.config.EditableConfigGroup;
+import dev.ftb.mods.ftblibrary.client.config.gui.EditConfigScreen;
 import dev.ftb.mods.ftblibrary.client.icon.IconHelper;
 import dev.ftb.mods.ftblibrary.client.util.ClientUtils;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftblibrary.platform.client.PlatformClient;
+import dev.ftb.mods.ftblibrary.platform.network.Play2ServerNetworking;
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.Team;
 import dev.ftb.mods.ftbteams.api.TeamMessage;
@@ -17,6 +20,8 @@ import dev.ftb.mods.ftbteams.config.ServerConfig;
 import dev.ftb.mods.ftbteams.data.ClientTeamManagerImpl;
 import dev.ftb.mods.ftbteams.data.PlayerPermissions;
 import dev.ftb.mods.ftbteams.net.OpenGUIMessage;
+import dev.ftb.mods.ftbteams.net.UpdatePropertiesRequestMessage;
+import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -25,9 +30,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class FTBTeamsClient {
 	public static final Identifier OPEN_GUI_ID = FTBTeamsAPI.id("open_gui");
@@ -60,8 +63,8 @@ public class FTBTeamsClient {
 		}
 	}
 
-	public static void openMyTeamGui(TeamPropertyCollection properties, PlayerPermissions permissions) {
-		new MyTeamScreen(properties, permissions).openGui();
+	public static void openMyTeamGui(PlayerPermissions permissions) {
+		new MyTeamScreen(permissions).openGui();
 	}
 
 	public static void updateSettings(UUID id, TeamPropertyCollection properties) {
@@ -114,5 +117,30 @@ public class FTBTeamsClient {
 			graphics.text(font, text, 1, 1, 0xFFFFFFFF);
 			graphics.pose().popMatrix();
 		}
+	}
+
+	public static void openTeamSettingsScreen(BooleanConsumer onFinished) {
+		var props = ClientTeamManagerImpl.getInstance().selfTeam().getProperties();
+
+		EditableConfigGroup config = new EditableConfigGroup("ftbteamsconfig", accepted -> {
+			if (accepted) {
+				Play2ServerNetworking.send(new UpdatePropertiesRequestMessage(props));
+			}
+			onFinished.accept(accepted);
+		});
+
+		Map<String,EditableConfigGroup> subGroups = new HashMap<>();
+		props.forEach((key, value) -> {
+			if (!key.isHidden()) {
+				String groupName = key.getId().getNamespace();
+				EditableConfigGroup cfg = subGroups.computeIfAbsent(groupName, _ -> config.getOrCreateSubgroup(groupName));
+				var val = key.config(cfg, value);
+				if (val != null && !key.isPlayerEditable()) {
+					val.setCanEdit(false);
+				}
+			}
+		});
+
+		new EditConfigScreen(config).openGui();
 	}
 }

@@ -95,7 +95,7 @@
     "ftbteams.message.removed_stage": "Hapus stage team: %s",
     "ftbteams.message.team_stages_header": "%s stage team buat team ini:",
     "ftbteams.message.set_property": "Set property %s menjadi %s",
-    "ftbteams.message.parse_failed": "Gagal ngebaca data: %s",
+    "ftbteams.message.parse_failed": "Gagal ngebaca data: '%s'",
     "ftbteams.message.property_not_editable": "Property %s tidak bisa diedit!",
     "ftbteams.accept": "Terima ✔",
     "ftbteams.decline": "Tolak ✘",
