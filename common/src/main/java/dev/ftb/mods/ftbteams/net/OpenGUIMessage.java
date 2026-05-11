@@ -20,7 +20,7 @@ public record OpenGUIMessage() implements CustomPacketPayload {
 	public static void handle(@SuppressWarnings("unused") OpenGUIMessage message, PacketContext context) {
 			ServerPlayer player = (ServerPlayer) context.player();
 			FTBTeamsAPI.api().getManager().getTeamForPlayer(player)
-					.ifPresent(team -> Server2PlayNetworking.send(player, new OpenMyTeamGUIMessage(team.getProperties(), PlayerPermissions.forPlayer(player))));
+					.ifPresent(_ -> Server2PlayNetworking.send(player, new OpenMyTeamGUIMessage(PlayerPermissions.forPlayer(player))));
 	}
 
 	public static void sendToServer() {

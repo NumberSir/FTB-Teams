@@ -5,7 +5,10 @@ import dev.ftb.mods.ftbteams.FTBTeams;
 import dev.ftb.mods.ftbteams.api.Team;
 import dev.ftb.mods.ftbteams.api.client.ClientTeamManager;
 import dev.ftb.mods.ftbteams.api.client.KnownClientPlayer;
+import dev.ftb.mods.ftbteams.client.FTBTeamsClient;
 import dev.ftb.mods.ftbteams.client.KnownClientPlayerNet;
+import dev.ftb.mods.ftbteams.client.gui.MyTeamScreen;
+import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.UUIDUtil;
@@ -156,6 +159,11 @@ public class ClientTeamManagerImpl implements ClientTeamManager {
 
 		KnownClientPlayer p = knownPlayers.get(id);
 		return Component.literal(p == null ? "Unknown" : p.name()).withStyle(ChatFormatting.YELLOW);
+	}
+
+	@Override
+	public void openTeamPropertiesEditor(BooleanConsumer onFinished) {
+		FTBTeamsClient.openTeamSettingsScreen(onFinished);
 	}
 
 	public void addTeam(ClientTeam team) {

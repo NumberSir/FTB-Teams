@@ -95,7 +95,7 @@
 	"ftbteams.message.removed_stage": "Estágio de equipe removido: %s",
 	"ftbteams.message.team_stages_header": "%s estágio(s) de equipe para esta equipe:",
 	"ftbteams.message.set_property": "Propriedade %s definida para %s",
-	"ftbteams.message.parse_failed": "Falha ao analisar o valor: %s",
+	"ftbteams.message.parse_failed": "Falha ao analisar o valor: '%s'",
 	"ftbteams.message.property_not_editable": "A propriedade %s não pode ser editada!",
 	"ftbteams.accept": "Aceitar ✔",
 	"ftbteams.decline": "Recusar ✘",

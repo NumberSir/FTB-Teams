@@ -1,8 +1,6 @@
 package dev.ftb.mods.ftbteams.client.gui;
 
-import dev.ftb.mods.ftblibrary.client.config.EditableConfigGroup;
 import dev.ftb.mods.ftblibrary.client.config.editable.EditableColor;
-import dev.ftb.mods.ftblibrary.client.config.gui.EditConfigScreen;
 import dev.ftb.mods.ftblibrary.client.gui.input.Key;
 import dev.ftb.mods.ftblibrary.client.gui.layout.WidgetLayout;
 import dev.ftb.mods.ftblibrary.client.gui.theme.NordColors;
@@ -63,9 +61,10 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 
 	private static final int MIN_MEMBER_PANEL_WIDTH = 80;
 
-	public MyTeamScreen(TeamPropertyCollection properties, PlayerPermissions permissions) {
-		this.properties = properties;
+	public MyTeamScreen(PlayerPermissions permissions) {
 		this.permissions = permissions;
+
+		properties = getManager().selfTeam().getProperties();
 		teamID = getManager().selfTeam().getId();
 
 		settingsButton = new SettingsButton(this);
@@ -385,32 +384,9 @@ public class MyTeamScreen extends BaseScreen implements NordColors {
 	}
 
 	private static class SettingsButton extends SimpleButton {
-		public SettingsButton(MyTeamScreen screen) {
-			super(screen, Component.translatable("gui.settings"), Icons.SETTINGS.withTint(NordColors.SNOW_STORM_2),
-					(_, _) -> onClick(screen));
-		}
-
-		private static void onClick(MyTeamScreen screen) {
-			EditableConfigGroup config = new EditableConfigGroup("ftbteamsconfig", accepted -> {
-				if (accepted) {
-					Play2ServerNetworking.send(new UpdatePropertiesRequestMessage(screen.properties));
-				}
-				screen.openGui();
-			});
-
-			Map<String,EditableConfigGroup> subGroups = new HashMap<>();
-			screen.properties.forEach((key, value) -> {
-				if (!key.isHidden()) {
-					String groupName = key.getId().getNamespace();
-					EditableConfigGroup cfg = subGroups.computeIfAbsent(groupName, _ -> config.getOrCreateSubgroup(groupName));
-					var val = key.config(cfg, value);
-					if (val != null && !key.isPlayerEditable()) {
-						val.setCanEdit(false);
-					}
-				}
-			});
-
-			new EditConfigScreen(config).openGui();
+		public SettingsButton(MyTeamScreen myTeamScreen) {
+			super(myTeamScreen, Component.translatable("gui.settings"), Icons.SETTINGS.withTint(NordColors.SNOW_STORM_2),
+					(_, _) -> FTBTeamsClient.openTeamSettingsScreen(_ -> myTeamScreen.openGui()));
 		}
 
 		@Override

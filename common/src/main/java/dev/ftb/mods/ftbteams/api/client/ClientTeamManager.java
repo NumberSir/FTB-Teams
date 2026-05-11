@@ -2,6 +2,7 @@ package dev.ftb.mods.ftbteams.api.client;
 
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.Team;
+import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
@@ -68,4 +69,11 @@ public interface ClientTeamManager {
     /// @param id a player's unique id, may be null or [net.minecraft.util.Util#NIL_UUID] to indicate a "system" user.
     /// @return a formatted and colored name for the given id, or `"Unknown"` if the ID is not known to the client at this time
     Component formatName(@Nullable UUID id);
+
+    /// Open the team properties editor GUI, normally opened by clicking the settings button at the top-right of the
+    /// team GUI.
+    ///
+    /// @param onFinished called when the editor GUI is closed; the boolean value is true if changes were applied, false
+    ///                   if the editor was closed via a cancel
+    void openTeamPropertiesEditor(BooleanConsumer onFinished);
 }

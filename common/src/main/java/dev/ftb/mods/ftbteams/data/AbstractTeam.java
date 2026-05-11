@@ -2,7 +2,6 @@ package dev.ftb.mods.ftbteams.data;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import de.marhali.json5.Json5Element;
 import de.marhali.json5.Json5Object;
 import dev.ftb.mods.ftblibrary.json5.Json5Ops;
 import dev.ftb.mods.ftblibrary.json5.Json5Util;
@@ -34,7 +33,10 @@ import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /// Base class for server-side teams
 public abstract class AbstractTeam extends AbstractTeamBase {
@@ -141,30 +143,47 @@ public abstract class AbstractTeam extends AbstractTeamBase {
 		NativeEventPosting.INSTANCE.postEvent(new TeamLoadedEvent.Data(this));
 	}
 
-	public <T> int settings(CommandSourceStack source, TeamProperty<T> key, String value) {
+	public <T> int settings(CommandSourceStack source, TeamProperty<T> key, @Nullable String valueStr) {
 		MutableComponent keyc = Component.translatable(key.getTranslationKey("ftbteamsconfig")).withStyle(ChatFormatting.YELLOW);
-		if (value.isEmpty()) {
-			Component valuec = Component.literal(key.toString(getProperty(key))).withStyle(ChatFormatting.AQUA);
-			source.sendSuccess(() -> keyc.append(" = ").append(valuec), true);
+		if (valueStr == null) {
+			source.sendSuccess(() -> keyc.append(" = ").append(formatValueStr(key.toString(getProperty(key)))), true);
 		} else if (key.isPlayerEditable()) {
-			Optional<T> optional = key.fromString(value);
-
-			if (optional.isPresent()) {
+			String valueStrStripped = stripQuotes(valueStr);
+			return key.fromString(valueStrStripped).map(value -> {
 				TeamPropertyCollection old = properties.copy();
-				setProperty(key, optional.get());
-				Component valuec = Component.literal(value).withStyle(ChatFormatting.AQUA);
-				source.sendSuccess(() -> Component.translatable("ftbteams.message.set_property", keyc, valuec), true);
+				setProperty(key, value);
+
+				source.sendSuccess(() -> Component.translatable("ftbteams.message.set_property", keyc, formatValueStr(valueStrStripped)), true);
 
 				NativeEventPosting.INSTANCE.postEvent(new TeamPropertiesChangedEvent.Data(this, old, false));
-				syncOnePropertyToAll(source.getServer(), key, optional.get());
-			} else {
-				source.sendFailure(Component.translatable("ftbteams.message.parse_failed", value));
+
+				syncOnePropertyToAll(source.getServer(), key, value);
+				if (!key.shouldSyncToAll()) {
+					syncOnePropertyToTeam(key, value);
+				}
+				return Command.SINGLE_SUCCESS;
+			}).orElseGet(() -> {
+				source.sendFailure(Component.translatable("ftbteams.message.parse_failed", valueStrStripped));
 				return 0;
-			}
+			});
 		} else {
 			source.sendFailure(Component.translatable("ftbteams.message.property_not_editable", keyc));
 		}
 		return Command.SINGLE_SUCCESS;
+	}
+
+	private static Component formatValueStr(String valueStr) {
+		return valueStr.isEmpty() ?
+				Component.translatable("gui.none").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC) :
+				Component.literal(valueStr).withStyle(ChatFormatting.AQUA);
+	}
+
+	private static String stripQuotes(String valueStr) {
+		if (valueStr.length() >= 2 && (valueStr.startsWith("\"") && valueStr.endsWith("\"") || valueStr.startsWith("'") && valueStr.endsWith("'"))) {
+			return valueStr.substring(1, valueStr.length() - 1);
+		} else {
+			return valueStr;
+		}
 	}
 
 	public int declineInvitation(CommandSourceStack source) throws CommandSyntaxException {

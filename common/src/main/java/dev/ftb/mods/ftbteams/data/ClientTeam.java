@@ -6,6 +6,7 @@ import dev.ftb.mods.ftbteams.api.TeamRank;
 import dev.ftb.mods.ftbteams.api.event.TeamPropertiesChangedEvent;
 import dev.ftb.mods.ftbteams.api.property.TeamProperty;
 import dev.ftb.mods.ftbteams.api.property.TeamPropertyCollection;
+import dev.ftb.mods.ftbteams.client.gui.MyTeamScreen;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
@@ -48,7 +49,6 @@ public class ClientTeam extends AbstractTeamBase {
 	public static ClientTeam copyOf(AbstractTeam team) {
 		ClientTeam clientTeam = new ClientTeam(team.id, team.getOwner(), team.getType(), false, team.properties.copy());
 		clientTeam.ranks.putAll(team.ranks);
-//		clientTeam.extraData = team.extraData.copy();
 		return clientTeam;
 	}
 
@@ -131,6 +131,8 @@ public class ClientTeam extends AbstractTeamBase {
 		properties.updateFrom(newProps);
 
 		NativeEventPosting.INSTANCE.postEvent(new TeamPropertiesChangedEvent.Data(this, old, true));
+
+		MyTeamScreen.refreshIfOpen();
 	}
 
 	public void setFullSyncRequired(BooleanSupplier fullSyncSupplier) {

@@ -45,9 +45,8 @@ public class FTBTeamsAPI {
 	/// Top-level API. Retrieve an instance of this via [FTBTeamsAPI#api()].
 	public interface API {
 		/// Check if the server-side team manager is loaded. This will always be the case on the server once the
-		/// [TeamManagerEvent] event has been fired with an action of
-		/// [TeamManagerEvent.Action.CREATED] (fired when the server is about
-		/// to start).
+		/// [TeamManagerEvent] event has been fired with an action of [TeamManagerEvent.Action.CREATED], which is fired
+		/// when the server is about to start.
 		///
 		/// @return true if the team manager exists, false otherwise
 		boolean isManagerLoaded();
@@ -59,7 +58,7 @@ public class FTBTeamsAPI {
 		TeamManager getManager();
 
 		/// Check if the client-side team manager is loaded. This will true once the client has received the sync'd
-		/// server-side data from the server, which occurs when the player connects.
+		/// team data from the server, which occurs when the player connects.
 		///
 		/// @return true if the client team manager exists, false otherwise
 		boolean isClientManagerLoaded();
@@ -67,7 +66,7 @@ public class FTBTeamsAPI {
 		/// Get the client-side team manager instance.
 		///
 		/// @return the client team manager
-		/// @throws NullPointerException if the manager is not yet loaded, or this is called from the client
+		/// @throws NullPointerException if the manager is not yet loaded, or this is called from the server
 		ClientTeamManager getClientManager();
 
 		/// By setting api-only team creation to true, this prevents players from creating party teams using either the

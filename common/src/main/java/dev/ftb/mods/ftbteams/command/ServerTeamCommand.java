@@ -33,7 +33,7 @@ public class ServerTeamCommand {
                                         .then(Commands.argument("value", StringArgumentType.greedyString())
                                                 .executes(ctx -> serverTeamArg(ctx).settings(ctx.getSource(), TeamPropertyArgument.get(ctx, "key"), string(ctx, "value")))
                                         )
-                                        .executes(ctx -> serverTeamArg(ctx).settings(ctx.getSource(), TeamPropertyArgument.get(ctx, "key"), ""))
+                                        .executes(ctx -> serverTeamArg(ctx).settings(ctx.getSource(), TeamPropertyArgument.get(ctx, "key"), null))
                                 )
                         )
                 );
