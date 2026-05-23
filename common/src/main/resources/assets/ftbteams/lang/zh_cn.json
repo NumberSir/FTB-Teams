@@ -75,7 +75,7 @@
     "ftbteams.team_type.party": "组队团队",
     "ftbteams.team_type.server": "服务器团队",
     "key.ftbteams.open_gui": "打开团队界面",
-    "key.categories.ftbteams": "FTB团队",
+	"key.category.ftbteams.ftbteams_key": "FTB团队",
     "ftbteams.message.invited": "已邀请 %s",
     "ftbteams.message.invite_sent": "%s 邀请你加入他们的团队！",
     "ftbteams.message.joined": "%s 加入了你的团队！",
@@ -105,5 +105,6 @@
     "ftbteams.message.property_not_editable": "属性 %s 不可编辑！",
     "ftbteams.accept": "接受 ✔",
     "ftbteams.decline": "拒绝 ✘",
-    "ftbteams.click_show_info": "点击查看团队信息"
+    "ftbteams.click_show_info": "点击查看团队信息",
+	"ftbteams.party_creation_failed": "尝试创建团队时出错：%s"
 }
